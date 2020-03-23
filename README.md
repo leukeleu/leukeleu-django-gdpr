@@ -8,11 +8,11 @@ pip install <this repo url>
 
 Add to INSTALLED_APPS:
 
-```!python
-INSTALLED_APPS [
-    ...
+```python
+INSTALLED_APPS = [
+    # ...
     'gdpr',
-    ...
+    # ...
 ]
 ```
 
