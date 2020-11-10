@@ -111,10 +111,12 @@ class Command(BaseCommand):
             encrypted = "Ja" if isinstance(field, EncryptedMixin) else "Nee"
         if field.is_relation:
             if isinstance(field, GenericForeignKey):
+                null = True
                 description = "Generieke relatie"
             else:
+                null = field.null
                 description = f"Relatie naar {field.related_model._meta.verbose_name}"
-            table.append((field.name, description, "", "" if field.null else "*", encrypted))
+            table.append((field.name, description, "", "" if null else "*", encrypted))
         else:
             required = "" if field.blank else "*"
             table.append(
