@@ -8,7 +8,7 @@ flaketest:
 
 isorttest:
 	# check isort
-	isort -rc . -c -w 120 -q --diff
+	isort . -c -w 120 -q --diff
 
 clean:
 	# Remove build/dist dirs
