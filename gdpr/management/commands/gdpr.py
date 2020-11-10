@@ -3,14 +3,14 @@ import re
 from datetime import datetime
 from pathlib import Path
 
+import yaml
+
+from tabulate import tabulate
+
 from django.apps import AppConfig, apps
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.core.management import BaseCommand
 from django.db.models import AutoField, Field, Model
-
-import yaml
-
-from tabulate import tabulate
 
 try:
     from django_cryptography.fields import EncryptedMixin
