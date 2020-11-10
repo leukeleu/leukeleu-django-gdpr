@@ -1,2 +1,8 @@
+# Linting
 flake8
 flake8-isort
+
+
+# Packaging
+twine
+wheel

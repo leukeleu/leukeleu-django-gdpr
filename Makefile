@@ -10,6 +10,22 @@ isorttest:
 	# check isort
 	isort -rc . -c -w 120 -q --diff
 
+clean:
+	# Remove build/dist dirs
+	rm -rf build dist
+
+build: test clean
+	# Test, clean and build
+	python setup.py build sdist bdist_wheel
+
+devrelease: build
+	# Build and upload to devpi staging
+	twine upload -r devpi --repository-url https://devpi.leukeleu.nl/leukeleu/dev/ dist/*
+
+release: build
+	# Build and upload to devpi live
+	twine upload -r devpi --repository-url https://devpi.leukeleu.nl/leukeleu/prod/ dist/*
+
 ##
 # These targets are to be used by BitBucket pipelines
 ##
