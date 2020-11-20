@@ -16,7 +16,7 @@ from django.db.models import Field, Model
 def pii_stats(models):
     counter = Counter()
     for model in models.values():
-        for label, field in model["fields"].items():
+        for field in model["fields"].values():
             counter[field["pii"]] += 1
 
     return counter
