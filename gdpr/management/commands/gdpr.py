@@ -14,6 +14,8 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.core.management import BaseCommand, CommandError
 from django.db.models import Field, Model
 
+EXPLANATION_KEY = "explanation"
+
 
 def pii_stats(models):
     counter = Counter()
@@ -31,8 +33,8 @@ def get_manual_input_for_field(data, model_label, field_label):
         input_data = {
             "pii": field.get("pii", None),
         }
-        if field.get("explanation"):
-            input_data["expanation"] = field["explanation"]
+        if field.get(EXPLANATION_KEY):
+            input_data[EXPLANATION_KEY] = field[EXPLANATION_KEY]
         return input_data
     return {}
 
