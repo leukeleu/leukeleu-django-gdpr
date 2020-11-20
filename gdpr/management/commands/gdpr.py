@@ -154,7 +154,10 @@ class Command(BaseCommand):
         repo_owner = os.environ["BITBUCKET_REPO_OWNER"]
         repo_slug = os.environ["BITBUCKET_REPO_SLUG"]
         commit = os.environ["BITBUCKET_COMMIT"]
-        url = f"http://api.bitbucket.org/2.0/repositories/{repo_owner}/{repo_slug}/commit/{commit}/reports/gdpr-report-001"
+        url = (
+            f"http://api.bitbucket.org/2.0/repositories/"
+            f"{repo_owner}/{repo_slug}/commit/{commit}/reports/gdpr-report-001"
+        )
         requests.put(
             url,
             proxies={"https": proxy, "http": proxy},
