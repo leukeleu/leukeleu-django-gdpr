@@ -21,5 +21,5 @@ setup(
         "License :: Other/Proprietary License",
     ],
     license="Proprietary",
-    install_requires=["tabulate", "pyyaml"],
+    install_requires=["pyyaml"],
 )

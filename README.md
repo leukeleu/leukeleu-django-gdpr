@@ -3,7 +3,7 @@
 ## Installation
 
 ```
-pip install <this repo url>
+pip install django-gdpr -i devpi.leukeleu.nl
 ```
 
 Add to INSTALLED_APPS:
@@ -20,5 +20,4 @@ INSTALLED_APPS = [
 
 - Put GDPR.yml in your project's root. Contains 
     - list of regexes of apps, models or fields to ignore.
-    - `text:` section containing some prose.
-- run: `python manage.py gdpr > GDPR.md`
+- run: `python manage.py gdpr --check`
