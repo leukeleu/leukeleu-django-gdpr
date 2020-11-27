@@ -11,10 +11,27 @@ import yaml
 
 from django.apps import AppConfig, apps
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.core.management import BaseCommand, CommandError
+from django.db import models
 from django.db.models import Field, Model
+from django.db.models.fields.related import RelatedField
 
 EXPLANATION_KEY = "explanation"
+DEFAULT_EXCLUDE_TYPES = (
+    models.AutoField,
+    models.UUIDField,
+    models.BooleanField,
+    RelatedField,
+    ContentType,
+)
+
+
+def object_matches_exclude_types(obj):
+    if isclass(obj):
+        return issubclass(obj, DEFAULT_EXCLUDE_TYPES)
+    else:
+        return isinstance(obj, DEFAULT_EXCLUDE_TYPES)
 
 
 def pii_stats(models):
@@ -65,9 +82,10 @@ def serialize_field(field):
 
 
 class Serializer:
-    def __init__(self, ignore_list=None):
+    def __init__(self, exclude_list=None, include_list=None):
         self.models = {}
-        self.ignore_list = ignore_list or []
+        self.exclude_list = exclude_list or []
+        self.include_list = include_list or []
 
     def generate_models_list(self):
         self.models = dict(
@@ -87,7 +105,11 @@ class Serializer:
         elif isinstance(o, (Field, GenericForeignKey)):
             s = f"{o.model._meta.label}.{o.name}"
 
-        include = not any(re.match(pattern, s) for pattern in self.ignore_list)
+        include = (
+            not object_matches_exclude_types(o)
+            and not (getattr(o, "auto_created", False))
+            and not any(re.fullmatch(pattern, s) for pattern in self.exclude_list)
+        ) or any(re.fullmatch(pattern, s) for pattern in self.include_list)
 
         return include
 
@@ -99,7 +121,7 @@ class Serializer:
                 "fields": {
                     field.name: serialize_field(field)
                     for field in model._meta.get_fields()
-                    if not field.auto_created and self.should_include(field)
+                    if self.should_include(field)
                 },
             },
         )
@@ -118,7 +140,11 @@ class Serializer:
 
     def save(self, stream):
         yaml.dump(
-            {"ignore": self.ignore_list, "models": self.models},
+            {
+                "exclude": self.exclude_list,
+                "include": self.include_list,
+                "models": self.models,
+            },
             stream=stream,
             sort_keys=False,
             indent=2,
@@ -191,7 +217,12 @@ class Command(BaseCommand):
         self.stdout.write("Checking...")
         data = self.read_data()
 
-        serializer = Serializer(ignore_list=data.get("ignore", []))
+        # migration ignore -> exclude: accept both, save as 'exclude'
+        exclude_list = data.get("exclude", []) + data.get("ignore", [])
+
+        serializer = Serializer(
+            exclude_list=exclude_list, include_list=data.get("include")
+        )
         serializer.generate_models_list()
         serializer.apply_existing_input_data(data.get("models", {}))
         stats = pii_stats(serializer.models)
