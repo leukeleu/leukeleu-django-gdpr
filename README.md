@@ -21,7 +21,7 @@ INSTALLED_APPS = [
 On first run, django-gdpr will generate a `gdpr.yml` file with a `models` list. This is
 a list of models in your project, each containing a list of fields. 
 
-```shell script
+```
 ./manage.py gdpr
 ```
 
@@ -57,7 +57,7 @@ eliminating all `pii: null`s.
 
 Django-gdpr outputs counts of the `pii: ` values when run:
 
-```shell script
+```
 ./manage.py gdpr
 Checking...
 No PII set     48
