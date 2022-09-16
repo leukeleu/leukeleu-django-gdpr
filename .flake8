@@ -11,4 +11,5 @@ exclude =
     __pycache__
     var/
     */migrations/*
+    build
     venv
