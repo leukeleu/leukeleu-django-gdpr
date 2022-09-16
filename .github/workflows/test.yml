@@ -12,6 +12,6 @@ jobs:
           cache: 'pip'
           cache-dependency-path: setup.cfg
       - run: |
-          pip -m pip install --upgrade pip
+          python -m pip install --upgrade pip
           make devinstall
       - run: make test
