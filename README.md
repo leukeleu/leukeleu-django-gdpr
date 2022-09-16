@@ -1,9 +1,9 @@
-# django-gdpr
+# leukeleu-django-gdpr
 
 ## Installation
 
 ```
-pip install django-gdpr -i devpi.leukeleu.nl
+pip install leukeleu-django-gdpr
 ```
 
 Add to INSTALLED_APPS:
@@ -11,14 +11,14 @@ Add to INSTALLED_APPS:
 ```python
 INSTALLED_APPS = [
     # ...
-    'gdpr',
+    'leukeleu_django_gdpr',
     # ...
 ]
 ```
 
 ## Usage:
 
-On first run, django-gdpr will generate a `gdpr.yml` file with a `models` list. This is
+On first run, leukeleu-django-gdpr will generate a `gdpr.yml` file with a `models` list. This is
 a list of models in your project, each containing a list of fields. 
 
 ```
@@ -48,14 +48,14 @@ models:
         pii: null
 ```
 
-Django-gdpr adds the `pii: null` to all fields. The objective is to replace all those 
+Leukeleu-django-gdpr adds the `pii: null` to all fields. The objective is to replace all those 
 `null` values with the correct boolean value; `pii: true` if the field represents PII 
 data, `pii: false` otherwise.
 
-When run again, django-gdpr will persist those values, allowing you to work your way to
+When run again, leukeleu-django-gdpr will persist those values, allowing you to work your way to
 eliminating all `pii: null`s.
 
-Django-gdpr outputs counts of the `pii: ` values when run:
+Leukeleu-django-gdpr outputs counts of the `pii: ` values when run:
 
 ```
 ./manage.py gdpr
@@ -68,7 +68,7 @@ PII False      0
 Run with `--check` to make the command exit with exit code 1 if 'No PII set' > 0 (the
 yaml file will still be generated/updated). 
 
-You can prevent django-gdpr from writing (back) to the yaml file by running with the
+You can prevent leukeleu-django-gdpr from writing (back) to the yaml file by running with the
 `--dry-run` flag.
 
 ## Excluding/including
@@ -87,7 +87,7 @@ _fully_ match the object's string representation.
 
 ### Default excludes
 
-By default, django-gdpr excludes fields of the following types:
+By default, leukeleu-django-gdpr excludes fields of the following types:
 
 *  AutoField
 *  UUIDField
@@ -117,6 +117,6 @@ but forgets to mark it as (non-) PII in the gdpr.yml.
 
 ### Reports
 
-When run from a Bitbucket Pipeline, django-gdpr can send the PII stats as a report to
+When run from a Bitbucket Pipeline, leukeleu-django-gdpr can send the PII stats as a report to
 Bitbucket. This will be visible in Pull Requests and Pipelines. Run with 
 `--report-pipeline` to enable it.
