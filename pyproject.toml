@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+
+[tool.black]
+line-length = 88
+target-version = [
+    "py38",
+]
+
+[tool.check-manifest]
+ignore = []
+
+[tool.isort]
+profile = "black"
+known_django = [
+    "django",
+]
+known_first_party = [
+    "leukeleu_django_gdpr",
+]
+sections = [
+    "FUTURE",
+    "STDLIB",
+    "THIRDPARTY",
+    "DJANGO",
+    "FIRSTPARTY",
+    "LOCALFOLDER",
+]
+lines_between_types = 1
+src_paths = [
+    "leukeleu_django_gdpr",
+    "tests",
+]
