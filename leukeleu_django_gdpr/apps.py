@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class GdprConfig(AppConfig):
-    name = 'gdpr'
-    verbose_name = 'GDPR'
+    name = "leukeleu_django_gdpr"
+    verbose_name = "GDPR"

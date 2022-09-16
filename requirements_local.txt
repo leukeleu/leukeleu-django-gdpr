@@ -1,9 +1,0 @@
-# Linting
-flake8
-flake8-isort
-
-
-# Packaging
-bumpversion
-twine
-wheel

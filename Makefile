@@ -2,6 +2,9 @@
 
 test: flaketest isorttest
 
+devinstall:
+	pip install --upgrade --upgrade-strategy eager -e .[test]
+
 flaketest:
 	# Check syntax and style
 	flake8
