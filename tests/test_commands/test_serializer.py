@@ -2,7 +2,7 @@ import unittest
 
 from unittest import TestCase
 
-from leukeleu_django_gdpr.management.commands.gdpr import Serializer
+from leukeleu_django_gdpr.gdpr import Serializer
 
 
 class SerializerTest(TestCase):
