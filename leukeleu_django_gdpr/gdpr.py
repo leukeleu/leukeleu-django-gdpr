@@ -1,15 +1,17 @@
 import re
+
 from collections import Counter
 from inspect import isclass
 from itertools import chain
 from pathlib import Path
 
 import yaml
-from django.apps import apps, AppConfig
+
+from django.apps import AppConfig, apps
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models import Model, Field
+from django.db.models import Field, Model
 from django.db.models.fields.related import RelatedField
 
 

@@ -7,4 +7,4 @@ class GdprConfig(AppConfig):
 
     def ready(self):
         # register checks
-        from . import checks
+        from . import checks  # noqa: F401

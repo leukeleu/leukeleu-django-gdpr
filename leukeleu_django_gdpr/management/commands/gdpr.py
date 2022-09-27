@@ -4,7 +4,7 @@ import requests
 
 from django.core.management import BaseCommand, CommandError
 
-from leukeleu_django_gdpr.gdpr import read_data, Serializer, pii_stats
+from leukeleu_django_gdpr.gdpr import Serializer, pii_stats, read_data
 
 
 def get_pii_stats(save=False):
@@ -22,9 +22,7 @@ def get_pii_stats(save=False):
     data = read_data()
     # migration ignore -> exclude: accept both, save as 'exclude'
     exclude_list = data.get("exclude", []) + data.get("ignore", [])
-    serializer = Serializer(
-        exclude_list=exclude_list, include_list=data.get("include")
-    )
+    serializer = Serializer(exclude_list=exclude_list, include_list=data.get("include"))
     serializer.generate_models_list()
     serializer.apply_existing_input_data(data.get("models", {}))
     if save:
