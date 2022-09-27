@@ -112,7 +112,7 @@ include:
 
 To run this in Bitbucket Pipelines you need to ensure this package can be installed from
 wherever this package is indexed. Run it with `--check` to make a (scheduled?) pipeline
-fail if there are unmarked fields, which can happen if someone adds a field to a model
+fail if there are unclassified fields, which can happen if someone adds a field to a model
 but forgets to mark it as (non-) PII in the gdpr.yml.
 
 ### Reports

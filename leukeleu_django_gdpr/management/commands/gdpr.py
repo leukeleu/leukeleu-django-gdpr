@@ -15,9 +15,9 @@ def get_pii_stats(save=False):
 
     :returns Counter: The PII stats, as a Counter with three keys: None, True
         and False. The None key contains all fields that have not been
-        marked as PII or not. The True key contains all fields that have
-        been marked as PII. The False key contains all fields that have
-        been marked as not PII.
+        classified as PII or not. The True key contains all fields that have
+        been classified as PII. The False key contains all fields that have
+        been classified as non-PII.
     """
     data = read_data()
     # migration ignore -> exclude: accept both, save as 'exclude'
@@ -37,7 +37,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--check",
             action="store_true",
-            help="Exit with non-zero exit code if there are any unmarked pii fields",
+            help="Exit with non-zero exit code if there are any unclassified pii fields",
         )
         parser.add_argument(
             "--dry-run",
@@ -60,13 +60,13 @@ class Command(BaseCommand):
             proxies={"https": proxy, "http": proxy},
             json={
                 "title": "GDPR scan report",
-                "details": f"There are {stats.get(None, 0)} unmarked PII fields.",
+                "details": f"There are {stats.get(None, 0)} unclassified PII fields.",
                 "report_type": "SECURITY",
                 "reporter": "django-gdpr",
                 "result": "FAILED" if stats.get(None, 0) else "PASSED",
                 "data": [
                     {
-                        "title": "Unmarked PII fields",
+                        "title": "Unclassified PII fields",
                         "type": "NUMBER",
                         "value": stats.get(None, 0),
                     },
@@ -88,10 +88,10 @@ class Command(BaseCommand):
         self.stdout.write("Checking...")
         serializer, stats = get_pii_stats(save=not options["dry_run"])
 
-        unmarked_fields = stats.get(None, 0)
+        unclassified_fields = stats.get(None, 0)
         self.stdout.write(
-            f"No PII set     {unmarked_fields}",
-            style_func=self.style.ERROR if unmarked_fields else self.style.SUCCESS,
+            f"No PII set     {unclassified_fields}",
+            style_func=self.style.ERROR if unclassified_fields else self.style.SUCCESS,
         )
         self.stdout.write(f"PII True       {stats.get(True, 0)}")
         self.stdout.write(f"PII False      {stats.get(False, 0)}")
@@ -99,5 +99,7 @@ class Command(BaseCommand):
         if options["report_pipeline"]:
             self.send_bitbucket_report(stats)
 
-        if options["check"] and unmarked_fields:
-            raise CommandError(f"There are still {unmarked_fields} unmarked PII fields")
+        if options["check"] and unclassified_fields:
+            raise CommandError(
+                f"There are still {unclassified_fields} unclassified PII fields"
+            )
