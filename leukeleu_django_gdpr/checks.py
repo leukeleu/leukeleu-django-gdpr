@@ -14,7 +14,7 @@ W001 = Warning(
 )
 
 
-@register(Tags.confidentiality, deploy=True)
+@register(Tags.confidentiality)
 def check_pii_stats(app_configs, **kwargs):
     """
     Make sure there are no model fields without a PII classification.
