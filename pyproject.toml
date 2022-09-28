@@ -10,6 +10,16 @@ target-version = [
     "py38",
 ]
 
+[tool.coverage.run]
+branch = true
+source = [
+    "leukeleu_django_gdpr",
+    "tests",
+]
+omit = [
+    "tests/test_settings.py",
+]
+
 [tool.check-manifest]
 ignore = []
 
