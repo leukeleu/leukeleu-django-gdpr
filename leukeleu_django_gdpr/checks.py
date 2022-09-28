@@ -10,7 +10,7 @@ class Tags:
 W001 = Warning(
     "You have one or more model field(s) without a PII classification.",
     hint="Update gpdr.yml and mark all field with either pii: true or pii: false.",
-    id="leukeleu_django_gdpr.W001",
+    id="gdpr.W001",
 )
 
 
