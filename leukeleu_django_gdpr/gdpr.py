@@ -9,8 +9,6 @@ import yaml
 
 from django.apps import AppConfig, apps
 from django.conf import settings
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import Field, Model
 from django.db.models.fields.related import RelatedField
@@ -26,6 +24,13 @@ def read_data():
         data = {}
 
     return data
+
+
+def is_generic_foreign_key(field):
+    return (
+        getattr(field, "is_relation", False)
+        and getattr(field, "related_model", False) is None
+    )
 
 
 class Serializer:
@@ -49,7 +54,7 @@ class Serializer:
             s = o.label
         elif isclass(o) and issubclass(o, Model):
             s = o._meta.label
-        elif isinstance(o, (Field, GenericForeignKey)):
+        elif isinstance(o, Field) or is_generic_foreign_key(o):
             s = f"{o.model._meta.label}.{o.name}"
 
         include = (
@@ -99,7 +104,7 @@ class Serializer:
 
 
 def serialize_field(field):
-    if isinstance(field, GenericForeignKey):
+    if is_generic_foreign_key(field):
         required = False
         name = field.name
         description = "Generieke relatie"
@@ -129,8 +134,11 @@ DEFAULT_EXCLUDE_TYPES = (
     models.UUIDField,
     models.BooleanField,
     RelatedField,
-    ContentType,
 )
+if apps.is_installed("django.contrib.contenttypes"):
+    from django.contrib.contenttypes.models import ContentType
+
+    DEFAULT_EXCLUDE_TYPES += (ContentType,)
 
 
 def object_matches_exclude_types(obj):
