@@ -61,7 +61,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write("Checking...")
-        serializer, stats = get_pii_stats(save=not options["dry_run"])
+        stats = get_pii_stats(save=not options["dry_run"])
 
         unclassified_fields = stats.get(None, 0)
         self.stdout.write(
