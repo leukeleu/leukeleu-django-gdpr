@@ -56,13 +56,14 @@ class SerializerTest(TestCase):
         )
 
     def test_exclude_regex(self):
-        serializer = Serializer(exclude_list=[r"custom_users\..*User"])
+        serializer = Serializer(exclude_list=[r"custom_users\.Special[A-z]+"])
         serializer.generate_models_list()
         self.assertEqual(
             set(serializer.models.keys()),
             {
                 "auth.Group",
                 "auth.Permission",
+                "custom_users.CustomUser",
             },
         )
 

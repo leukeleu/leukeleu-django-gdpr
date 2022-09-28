@@ -4,7 +4,6 @@ from django.utils.translation import gettext_lazy as _
 
 
 class CustomUser(AbstractUser):
-    # Custom fields here
     is_pregnant = models.BooleanField(
         default=False, help_text=_("Is the user pregnant?")
     )
