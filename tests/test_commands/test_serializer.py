@@ -67,8 +67,14 @@ class SerializerTest(TestCase):
             },
         )
 
-    @unittest.skip("Todo: fix this test")
+    @unittest.skip("TODO: fix this test")
     def test_exclude_with_include(self):
+        """
+        FIXME:
+         This test reveals a bug in the include/exclude logic, which has not been fixed yet;
+         if an app is excluded, none of its models will be considered at all,
+         so the include_list doesn't function as an override, even though that was intended.
+        """
         serializer = Serializer(
             exclude_list=["custom_users"],
             include_list=[r"custom_users\.CustomUser"],
