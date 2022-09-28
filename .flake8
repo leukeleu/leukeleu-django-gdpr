@@ -7,7 +7,7 @@ extend-ignore =
     W503  # https://www.flake8rules.com/rules/W503.html
 extend-select = B950
 exclude =
-    .git,
+    .git
     __pycache__
     var/
     */migrations/*
