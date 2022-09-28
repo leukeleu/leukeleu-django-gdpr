@@ -4,31 +4,7 @@ import requests
 
 from django.core.management import BaseCommand, CommandError
 
-from leukeleu_django_gdpr.gdpr import Serializer, pii_stats, read_data
-
-
-def get_pii_stats(save=False):
-    """
-    Determines the PII stats for all models. Any data from an existing
-    gdpr.yml is taken into account. If save is True, the data is saved
-    to gdpr.yml.
-
-    :returns A Counter with three keys:      
-        * None: all fields that have not been classified
-        * True: all fields that have been classified as PII
-        * False: all fields that have been classified as non-PII.
-    """
-    data = read_data()
-    # Previous versions used "ignore", migrate to "exclude"
-    exclude_list = data.get("exclude", data.get("ignore", []))
-    serializer = Serializer(exclude_list=exclude_list, include_list=data.get("include"))
-    serializer.generate_models_list()
-    serializer.apply_existing_input_data(data.get("models", {}))
-    if save:
-        with open("gdpr.yml", "w") as f:
-            serializer.save(f)
-
-    return pii_stats(serializer.models)
+from leukeleu_django_gdpr.gdpr import get_pii_stats
 
 
 class Command(BaseCommand):

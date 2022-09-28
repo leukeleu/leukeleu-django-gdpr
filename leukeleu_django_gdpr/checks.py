@@ -1,6 +1,6 @@
 from django.core.checks import Warning, register
 
-from leukeleu_django_gdpr.management.commands.gdpr import get_pii_stats
+from leukeleu_django_gdpr.gdpr import get_pii_stats
 
 
 class Tags:
