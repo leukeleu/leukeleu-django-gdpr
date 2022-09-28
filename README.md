@@ -107,6 +107,14 @@ include:
 - accounts\.Profile\.is_pregnant
 ```
 
+## Checks
+
+Leukeleu-django-gdpr adds a `gdpr.W001` check to the `check` command. This check will fail if
+there are any `pii: null` values in the yaml file. To run the check, run:
+
+```
+./manage.py check
+```
 
 ## Pipelines
 
