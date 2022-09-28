@@ -8,16 +8,16 @@ class Tags:
 
 
 W001 = Warning(
-    "You have fields that need to be classified as either PII or non-PII.",
-    hint="Please classify all fields in gpdr.yml by marking the pii property with True or False",
+    "You have one or more model field(s) without a PII classification.",
+    hint="Update gpdr.yml and mark all field with either pii: true or pii: false.",
     id="leukeleu_django_gdpr.W001",
 )
 
 
 @register(Tags.confidentiality, deploy=True)
-def check_pii_fields(app_configs, **kwargs):
+def check_pii_stats(app_configs, **kwargs):
     """
-    Check that all fields have been classified as either PII or non-PII.
+    Make sure there are no model fields without a PII classification.
     """
     stats = get_pii_stats()
 

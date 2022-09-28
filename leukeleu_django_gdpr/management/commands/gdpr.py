@@ -9,19 +9,18 @@ from leukeleu_django_gdpr.gdpr import Serializer, pii_stats, read_data
 
 def get_pii_stats(save=False):
     """
-    Determines the PII stats for all models and fields. Takes existing
-    data from gdpr.yml into account if it exists. If save is True, the
-    data is saved back to gdpr.yml.
+    Determines the PII stats for all models. Any data from an existing
+    gdpr.yml is taken into account. If save is True, the data is saved
+    to gdpr.yml.
 
-    :returns Counter: The PII stats, as a Counter with three keys: None, True
-        and False. The None key contains all fields that have not been
-        classified as PII or not. The True key contains all fields that have
-        been classified as PII. The False key contains all fields that have
-        been classified as non-PII.
+    :returns A Counter with three keys:      
+        * None: all fields that have not been classified
+        * True: all fields that have been classified as PII
+        * False: all fields that have been classified as non-PII.
     """
     data = read_data()
-    # migration ignore -> exclude: accept both, save as 'exclude'
-    exclude_list = data.get("exclude", []) + data.get("ignore", [])
+    # Previous versions used "ignore", migrate to "exclude"
+    exclude_list = data.get("exclude", data.get("ignore", []))
     serializer = Serializer(exclude_list=exclude_list, include_list=data.get("include"))
     serializer.generate_models_list()
     serializer.apply_existing_input_data(data.get("models", {}))
@@ -37,7 +36,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--check",
             action="store_true",
-            help="Exit with non-zero exit code if there are any unclassified pii fields",
+            help="Exit with a non-zero status code if PII classification is missing for one or more model fields.",
         )
         parser.add_argument(
             "--dry-run",
@@ -90,7 +89,7 @@ class Command(BaseCommand):
 
         unclassified_fields = stats.get(None, 0)
         self.stdout.write(
-            f"No PII set     {unclassified_fields}",
+            f"PII not set    {unclassified_fields}",
             style_func=self.style.ERROR if unclassified_fields else self.style.SUCCESS,
         )
         self.stdout.write(f"PII True       {stats.get(True, 0)}")
