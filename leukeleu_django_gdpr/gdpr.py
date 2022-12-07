@@ -13,7 +13,7 @@ from django.db import models
 from django.db.models import Field, Model
 from django.db.models.fields.related import RelatedField
 
-GDPR_YML_PATH = Path(settings.BASE_DIR) / "gdpr.yml"
+GDPR_YML_PATH = getattr(settings, "GDPR_YML_PATH", Path("gdpr.yml"))
 
 
 def read_data():

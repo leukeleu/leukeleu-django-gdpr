@@ -25,7 +25,7 @@ a list of models in your project, each containing a list of fields.
 ./manage.py gdpr
 ```
 
-A file `gdpr.yml` is created in the project root directory. It should be added to
+A file `gdpr.yml` is created in the current working directory. It should be added to
 version control. Each model in the models list has the following structure:
 
 ```yaml
@@ -70,6 +70,15 @@ yaml file will still be generated/updated).
 
 You can prevent leukeleu-django-gdpr from writing (back) to the yaml file by running with the
 `--dry-run` flag.
+
+## Configuration
+
+You can configure the location the yaml file is written to and read from by setting `GDPR_YAML_PATH` 
+in your settings file. The default is `gdpr.yml` in the current working directory.
+
+```python
+GDPR_YML_PATH = '/path/to/gdpr.yml'
+```
 
 ## Excluding/including
 
