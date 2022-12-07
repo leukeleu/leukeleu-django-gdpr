@@ -16,3 +16,8 @@ class SpecialUser(CustomUser):
     speciality = models.CharField(
         _("Speciality"), max_length=255, null=True, blank=True
     )
+
+
+class ProxyUser(CustomUser):
+    class Meta:
+        proxy = True

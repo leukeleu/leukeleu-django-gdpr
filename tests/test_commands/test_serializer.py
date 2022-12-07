@@ -16,6 +16,8 @@ class SerializerTest(TestCase):
                 "auth.Permission",
                 "custom_users.CustomUser",
                 "custom_users.SpecialUser",
+                # Does not include proxy models:
+                # "custom_users.ProxyUser"
             },
         )
 
