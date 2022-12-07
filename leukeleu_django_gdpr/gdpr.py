@@ -80,6 +80,8 @@ class Serializer:
 
     def handle_app(self, app_config):
         for model in app_config.get_models():
+            if model._meta.proxy:
+                continue  # Skip proxy models
             if self.should_include(model):
                 yield self.handle_model(model)
 
