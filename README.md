@@ -116,15 +116,9 @@ there are any `pii: null` values in the yaml file. To run the check, run:
 ./manage.py check
 ```
 
-## Pipelines
+## CI/CD
 
-To run this in Bitbucket Pipelines you need to ensure this package can be installed from
-wherever this package is indexed. Run it with `--check` to make a (scheduled?) pipeline
+To run this in CI/CD you need to ensure this package can be installed from
+wherever this package is indexed. Run it with `--check` to make a (scheduled?) CI/CD task
 fail if there are unclassified fields, which can happen if someone adds a field to a model
 but forgets to mark it as (non-) PII in the gdpr.yml.
-
-### Reports
-
-When run from a Bitbucket Pipeline, leukeleu-django-gdpr can send the PII stats as a report to
-Bitbucket. This will be visible in Pull Requests and Pipelines. Run with
-`--report-pipeline` to enable it.
