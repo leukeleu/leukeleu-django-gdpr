@@ -13,12 +13,18 @@ from django.db import models
 from django.db.models import Field, Model
 from django.db.models.fields.related import RelatedField
 
-GDPR_YML_PATH = Path(settings.BASE_DIR) / "gdpr.yml"
+
+def get_gdpr_yml_path():
+    if hasattr(settings, "DJANGO_GDPR_YML_DIR"):
+        return Path(settings.DJANGO_GDPR_YML_DIR) / "gdpr.yml"
+    else:
+        return Path(settings.BASE_DIR) / "gdpr.yml"
 
 
 def read_data():
-    if GDPR_YML_PATH.exists():
-        with GDPR_YML_PATH.open() as f:
+    path = get_gdpr_yml_path()
+    if path.exists():
+        with path.open() as f:
             data = yaml.safe_load(f)
     else:
         data = {}
@@ -190,7 +196,7 @@ def get_pii_stats(save=False):
     serializer.generate_models_list()
     serializer.apply_existing_input_data(data.get("models", {}))
     if save:
-        with GDPR_YML_PATH.open("w") as f:
+        with get_gdpr_yml_path().open("w") as f:
             serializer.save(f)
 
     return pii_stats(serializer.models)

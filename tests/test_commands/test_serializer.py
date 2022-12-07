@@ -1,8 +1,20 @@
+import pathlib
 import unittest
 
-from unittest import TestCase
+from django.test import SimpleTestCase as TestCase
+from django.test import override_settings
 
-from leukeleu_django_gdpr.gdpr import Serializer
+from leukeleu_django_gdpr.gdpr import Serializer, get_gdpr_yml_path
+
+
+class TestGetGdprYmlPath(TestCase):
+    @override_settings(BASE_DIR="/tmp")
+    def test_get_gdpr_yml_path(self):
+        self.assertEqual(get_gdpr_yml_path(), pathlib.Path("/tmp/gdpr.yml"))
+
+    @override_settings(DJANGO_GDPR_YML_DIR="tests/")
+    def test_custom_gdpr_yml_path(self):
+        self.assertEqual(get_gdpr_yml_path(), pathlib.Path("tests/gdpr.yml"))
 
 
 class SerializerTest(TestCase):
