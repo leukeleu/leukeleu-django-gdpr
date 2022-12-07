@@ -16,6 +16,17 @@ INSTALLED_APPS = [
 ]
 ```
 
+## Configuration
+
+By default, the `gdpr` management command will write `gdpr.yml` to `settings.BASE_DIR`.
+
+To change the output directory (without changing `settings.BASE_DIR`) add
+`DJANGO_GDPR_YML_DIR` to your settings:
+
+```python
+DJANGO_GDPR_YML_DIR = os.path.join(BASE_DIR, 'docs')
+```
+
 ## Usage:
 
 On first run, leukeleu-django-gdpr will generate a `gdpr.yml` file with a `models` list. This is
