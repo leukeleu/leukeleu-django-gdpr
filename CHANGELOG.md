@@ -1,7 +1,7 @@
 History
 -------
 
-* 1.3.1 (unreleased)
+* 1.3.1 (2022-12-08)
   
   * Fix serialization of SafeString values
 
