@@ -1,6 +1,10 @@
 History
 -------
 
+* 1.3.1 (unreleased)
+  
+  * Fix serialization of SafeString values
+
 * 1.3.0 (2022-12-08)
 
   * Add an option to override gdpr.yml output directory
