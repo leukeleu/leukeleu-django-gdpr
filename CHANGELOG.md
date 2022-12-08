@@ -1,7 +1,7 @@
 History
 -------
 
-* 1.3.0 (unreleased)
+* 1.3.0 (2022-12-08)
 
   * Add an option to override gdpr.yml output directory
   * Omit proxy models
