@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils.html import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 
@@ -14,7 +15,15 @@ class CustomUser(AbstractUser):
 
 class SpecialUser(CustomUser):
     speciality = models.CharField(
-        _("Speciality"), max_length=255, null=True, blank=True
+        _("Speciality"),
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text=mark_safe(
+            _(
+                "Speciality of the user. <a href='https://example.com' target='_blank'>More info</a>"
+            )
+        ),
     )
 
 
