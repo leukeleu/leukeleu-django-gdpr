@@ -12,6 +12,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models import Field, Model
 from django.db.models.fields.related import RelatedField
+from django.utils.safestring import SafeString
 
 
 def get_gdpr_yml_path():
@@ -37,6 +38,19 @@ def is_generic_foreign_key(field):
         getattr(field, "is_relation", False)
         and getattr(field, "related_model", False) is None
     )
+
+
+def _str(s):
+    """
+    Call str on an object and return the result,
+    if the object is a SafeString make it a normal string.
+    """
+    s = str(s)  # Convert lazy strings to (safe)strings
+    if isinstance(s, SafeString):
+        # Adding a non-safe str to a SafeString will return s str
+        # (not a SafeString) this is the only way to undo mark_safe
+        s = s + ""
+    return s
 
 
 class Serializer:
@@ -75,7 +89,7 @@ class Serializer:
         return (
             model._meta.label,
             {
-                "name": str(model._meta.verbose_name).title(),
+                "name": _str(model._meta.verbose_name).title(),
                 "fields": {
                     field.name: serialize_field(field)
                     for field in model._meta.get_fields()
@@ -124,13 +138,13 @@ def serialize_field(field):
             description = f"Relatie naar {field.related_model._meta.verbose_name}"
             required = not field.null
         else:
-            description = str(field.description)
+            description = field.description
             required = not field.blank
 
     return {
-        "name": str(name).title(),
-        "description": description,
-        "help_text": str(help_text),
+        "name": _str(name).title(),
+        "description": _str(description),
+        "help_text": _str(help_text),
         "required": required,
         "pii": None,
     }
