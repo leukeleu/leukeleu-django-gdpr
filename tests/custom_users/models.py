@@ -27,6 +27,12 @@ class SpecialUser(CustomUser):
     )
 
 
+class ExclusiveUser(CustomUser):
+    is_exclusive = models.BooleanField(
+        default=False, help_text=_("Is the user exclusive?")
+    )
+
+
 class ProxyUser(CustomUser):
     class Meta:
         proxy = True
