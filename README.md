@@ -88,9 +88,9 @@ To exclude apps, models or fields from this process altogether, list them in the
 `exclude:` list in the yaml file. Each item is a regex which should match an object's
 string representation in the following formats;
 
-* for apps: the app's `label`, such as `admin` or `auth`.
-* for models: the model's label, such as `admin.LogEntry` or `auth.Permission`
-* for fields: the model's label followed by `.` followed by the field's name, such as
+* for apps: the app's `label`, e.g. `auth`.
+* for models: the model's label, e.g. `auth.Permission`
+* for fields: the model's label followed by `.` followed by the field's name, e.g.
   `auth.User.username`.
 
 Keep in mind that the items in the list are considered to be regexes which should
@@ -105,9 +105,10 @@ By default, leukeleu-django-gdpr excludes fields of the following types:
 *  BooleanField
 *  RelatedField
 
-and the following models:
+and the following apps:
 
-* ContentType
+* django.contrib.admin
+* django.contrib.contenttypes
 
 If you still want to include a field/model that would be excluded this way, you can put
 an item in the `include:` list in the yaml file:
@@ -116,7 +117,11 @@ an item in the `include:` list in the yaml file:
 include:
 - clients\.Client\.external_epd_uuid
 - accounts\.Profile\.is_pregnant
+- admin\.LogEntry
 ```
+
+Proxy models are always excluded. They are the same as the model they proxy,
+so there is no benefit in including them.
 
 ## Checks
 
