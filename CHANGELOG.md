@@ -1,7 +1,7 @@
 History
 -------
 
-* 1.4.0 (unreleased)
+* 1.4.0 (2022-12-22)
 
   * Updated include/exclude logic. Includes now take precedence over excludes.
   * django.contrib.admin models are now excluded by default.
