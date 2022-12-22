@@ -1,6 +1,13 @@
 History
 -------
 
+* 1.4.0 (unreleased)
+
+  * Updated include/exclude logic. Includes now take precedence over excludes.
+  * django.contrib.admin models are now excluded by default.
+  * Inherited fields are now identified as the ChildModel.field_name instead of the ParentModel.field_name.
+    This means it's possible to include/exclude inherited fields by using the ChildModel.field_name.
+
 * 1.3.1 (2022-12-08)
   
   * Fix serialization of SafeString values

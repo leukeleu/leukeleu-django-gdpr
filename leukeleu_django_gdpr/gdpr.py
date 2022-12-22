@@ -1,16 +1,14 @@
 import re
 
 from collections import Counter
-from inspect import isclass
 from itertools import chain
 from pathlib import Path
 
 import yaml
 
-from django.apps import AppConfig, apps
+from django.apps import apps
 from django.conf import settings
 from django.db import models
-from django.db.models import Field, Model
 from django.db.models.fields.related import RelatedField
 from django.utils.safestring import SafeString
 
@@ -62,28 +60,43 @@ class Serializer:
     def generate_models_list(self):
         self.models = dict(
             chain.from_iterable(
-                self.handle_app(app_config)
-                for app_config in apps.get_app_configs()
-                if self.should_include(app_config)
+                self.handle_app(app_config) for app_config in apps.get_app_configs()
             )
         )
 
-    def should_include(self, o):
-        s = ""
-        if isinstance(o, AppConfig):
-            s = o.label
-        elif isclass(o) and issubclass(o, Model):
-            s = o._meta.label
-        elif isinstance(o, Field) or is_generic_foreign_key(o):
-            s = f"{o.model._meta.label}.{o.name}"
+    def should_include_field(self, model, field):
+        app_label = model._meta.app_label
+        model_name = f"{app_label}.{model.__name__}"
+        field_name = f"{model_name}.{field.name}"
 
-        include = (
-            not object_matches_exclude_types(o)
-            and not (getattr(o, "auto_created", False))
-            and not any(re.fullmatch(pattern, s) for pattern in self.exclude_list)
-        ) or any(re.fullmatch(pattern, s) for pattern in self.include_list)
+        field_must_be_included = any(
+            re.fullmatch(pattern, field_name) for pattern in self.include_list
+        )
 
-        return include
+        if not field_must_be_included and (
+            isinstance(field, DEFAULT_EXCLUDE_FIELDS) or field.auto_created
+        ):
+            # Exclude fields that are not relevant for GDPR, unless they are explicitly included
+            return False
+
+        if field_must_be_included or any(
+            re.fullmatch(pattern, model_name) or re.fullmatch(pattern, app_label)
+            for pattern in self.include_list
+        ):
+            # The app, model or field is explicitly included, include it
+            return True
+
+        if model._meta.app_config.name in DEFAULT_EXCLUDED_APPS:
+            # If the app is in the default excluded apps, exclude it
+            return False
+
+        # Check if the app, model or field is explicitly excluded
+        return not any(
+            re.fullmatch(pattern, field_name)
+            or re.fullmatch(pattern, model_name)
+            or re.fullmatch(pattern, app_label)
+            for pattern in self.exclude_list
+        )
 
     def handle_model(self, model):
         return (
@@ -93,7 +106,7 @@ class Serializer:
                 "fields": {
                     field.name: serialize_field(field)
                     for field in model._meta.get_fields()
-                    if self.should_include(field)
+                    if self.should_include_field(model, field)
                 },
             },
         )
@@ -102,8 +115,9 @@ class Serializer:
         for model in app_config.get_models():
             if model._meta.proxy:
                 continue  # Skip proxy models
-            if self.should_include(model):
-                yield self.handle_model(model)
+            model_label, model_dict = self.handle_model(model)
+            if model_dict["fields"]:
+                yield model_label, model_dict
 
     def apply_existing_input_data(self, input_data):
         for model_label in self.models:
@@ -132,8 +146,8 @@ def serialize_field(field):
         description = "Generieke relatie"
         help_text = None
     else:
-        name = field.verbose_name
-        help_text = field.help_text
+        name = getattr(field, "verbose_name", None) or getattr(field, "name", None)
+        help_text = getattr(field, "help_text", None)
         if field.is_relation:
             description = f"Relatie naar {field.related_model._meta.verbose_name}"
             required = not field.null
@@ -151,23 +165,16 @@ def serialize_field(field):
 
 
 EXPLANATION_KEY = "explanation"
-DEFAULT_EXCLUDE_TYPES = (
+DEFAULT_EXCLUDED_APPS = (
+    "django.contrib.admin",
+    "django.contrib.contenttypes",
+)
+DEFAULT_EXCLUDE_FIELDS = (
     models.AutoField,
     models.UUIDField,
     models.BooleanField,
     RelatedField,
 )
-if apps.is_installed("django.contrib.contenttypes"):
-    from django.contrib.contenttypes.models import ContentType
-
-    DEFAULT_EXCLUDE_TYPES += (ContentType,)
-
-
-def object_matches_exclude_types(obj):
-    if isclass(obj):
-        return issubclass(obj, DEFAULT_EXCLUDE_TYPES)
-    else:
-        return isinstance(obj, DEFAULT_EXCLUDE_TYPES)
 
 
 def pii_stats(models):
