@@ -1,6 +1,10 @@
 History
 -------
 
+* 1.4.1 (2023-01-11)
+
+  * Remove unused dependency on requests
+
 * 1.4.0 (2022-12-22)
 
   * Updated include/exclude logic. Includes now take precedence over excludes.
