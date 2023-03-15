@@ -21,7 +21,8 @@ class SpecialUser(CustomUser):
         blank=True,
         help_text=mark_safe(
             _(
-                "Speciality of the user. <a href='https://example.com' target='_blank'>More info</a>"
+                "Speciality of the user."
+                " <a href='https://example.com' target='_blank'>More info</a>"
             )
         ),
     )

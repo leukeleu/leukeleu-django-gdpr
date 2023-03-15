@@ -76,7 +76,8 @@ class Serializer:
         if not field_must_be_included and (
             isinstance(field, DEFAULT_EXCLUDE_FIELDS) or field.auto_created
         ):
-            # Exclude fields that are not relevant for GDPR, unless they are explicitly included
+            # Exclude fields that are not relevant for GDPR,
+            # unless they are explicitly included
             return False
 
         if field_must_be_included or any(

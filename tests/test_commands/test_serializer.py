@@ -85,7 +85,10 @@ class SerializerTest(TestCase):
         )
 
     def test_include_django_admin(self):
-        """Include a model from django.contrib.admin, even though it is excluded by default."""
+        """
+        Include a model from django.contrib.admin,
+        ven though it is excluded by default.
+        """
         serializer = Serializer(include_list=[r"admin\.LogEntry"])
         serializer.generate_models_list()
         self.assertEqual(
@@ -166,7 +169,10 @@ class SerializerTest(TestCase):
         )
 
     def test_exclude_and_include_all_apps(self):
-        """Excluding all apps and including all apps is the same as not excluding or including anything."""
+        """
+        Excluding all apps and including all apps
+        is the same as not excluding or including anything.
+        """
         default_serializer = Serializer()
         serializer = Serializer(
             exclude_list=[r"auth", "custom_users"],

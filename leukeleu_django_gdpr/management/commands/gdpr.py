@@ -8,7 +8,10 @@ class Command(BaseCommand):
         parser.add_argument(
             "--check",
             action="store_true",
-            help="Exit with a non-zero status code if PII classification is missing for one or more model fields.",
+            help=(
+                "Exit with a non-zero status code if PII classification is"
+                " missing for one or more model fields."
+            ),
         )
         parser.add_argument(
             "--dry-run",
