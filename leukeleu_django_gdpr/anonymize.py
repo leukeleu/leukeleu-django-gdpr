@@ -6,6 +6,7 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
+from django.core.validators import EMPTY_VALUES
 from django.db import transaction
 from django.db.models import Q
 
@@ -38,8 +39,8 @@ class BaseAnonymizer:
 
                 Model = apps.get_model(model_name)  # noqa: N806
 
-                qs = qs_overrides.get(model_name, Model._base_manager.all())
-                qs = qs.all()  # Makes sure we are always dealing with the latest data
+                # Calling .all() makes sure we are always dealing with the latest data
+                qs = qs_overrides.get(model_name, Model._base_manager).all()
 
                 for field_name, field_data in model_data["fields"].items():
                     field_path = f"{model_name}.{field_name}"
@@ -65,7 +66,8 @@ class BaseAnonymizer:
                         )
 
                     for obj in qs:
-                        setattr(obj, field_name, value_func())
+                        if getattr(obj, field_name) not in EMPTY_VALUES:
+                            setattr(obj, field_name, value_func())
 
                 Model.objects.bulk_update(
                     qs,

@@ -16,6 +16,9 @@ def _get_models():
                 "first_name": {
                     "pii": True,
                 },
+                "last_name": {
+                    "pii": True,
+                },
             }
         }
     }
@@ -39,6 +42,21 @@ class AnonymizerTest(TestCase):
         self.user = CustomUser.objects.create(username="User", first_name="John")
         self.superuser = CustomUser.objects.create(username="Super", is_superuser=True)
         self.staffuser = CustomUser.objects.create(username="Staff", is_staff=True)
+
+    def test_empty_fields_are_skipped(self):
+        user_without_last_name = CustomUser.objects.create(
+            first_name="First name",
+        )
+        self.assertEqual(user_without_last_name.last_name, "")
+
+        BaseAnonymizer().anonymize()
+        user_without_last_name.refresh_from_db()
+
+        # This should be different now
+        self.assertNotEqual(user_without_last_name.first_name, "First name")
+
+        # Last name should still be empty
+        self.assertEqual(user_without_last_name.last_name, "")
 
     def test_username_anonymization(self):
         self.assertEqual(self.user.username, "User")
