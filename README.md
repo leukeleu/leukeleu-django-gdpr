@@ -140,22 +140,41 @@ To change the configuration, you can create a subclass of `BaseAnonymizer`:
 
 ```python
 # some_file.py
+
+fake = Faker(["nl-NL"])
+
+
 class Anonymizer(BaseAnonymizer):
-    # To skip rows
+    # Exclude rows
+    # Default: superusers and staff users are excluded
     extra_qs_overrides = {
-        "auth.User": User._base_manager.exclude(is_superuser=True),
+        "app.Model": Model._base_manager.exclude(some_field=...),
         ...
     }
 
-    # To change what fake data should be used for a field
+    # Specify fake data for a field
+    # Default: user's first_name and last_name are filled with random first/last names
     extra_field_overrides = {
-        "auth.User.first_name": fake.first_name,
+        "app.Model.some_field": fake.word,
+        "app.Model.some_other_field": lambda: "same value for every cell",
+        ...
+    }
+    
+    # Specify the fake data used for a field type
+    # Use for custom fields or to overwrite defaults
+    # Default: django builtin fields have "sensible" defaults
+    extra_fieldtype_overrides = {
+        "CustomPhoneNumberField": fake.phone_number,
+      
+        # Also specify a unique variant (append with ".unique")
+        "CustomPhoneNumberField.unique": fake.unique.phone_number,
         ...
     }
 
-    # To skip fields
+    # Exclude fields
+    # Default: no fields are excluded
     excluded_fields = [
-        "auth.User.email",  # Usually you should not exclude emails
+        "app.SomeModel.some_field",
         ...
     ]
 ```

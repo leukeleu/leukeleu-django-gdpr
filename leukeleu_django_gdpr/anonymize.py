@@ -22,18 +22,22 @@ class BaseAnonymizer:
     """
     Base class for anonymizing data.
 
+    By default:
+        - superusers and staff users are excluded from anonymization
+        - the user's first_name and last_name are filled with fake first/last names
+
     Options:
         excluded_fields: List of fields to exclude from anonymization
-            example: ["auth.User.email"]
+            example: ["app.Model.field"]
 
         extra_fieldtype_overrides: Dict of field type overrides
-            example: {"CharField": fake.pystr}
+            example: {"CustomPhoneNumberField": fake.phone_number}
 
         extra_qs_overrides: Dict of queryset overrides
-            example: {"auth.User": User.objects.exclude(is_superuser=True)}
+            example: {"app.Model": Model.objects.exclude(some_field=...)}
 
         extra_field_overrides: Dict of field overrides
-            example: {"auth.User.email": fake.email}
+            example: {"app.Model.field": fake.word}
     """
 
     excluded_fields = []
