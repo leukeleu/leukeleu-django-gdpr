@@ -123,6 +123,49 @@ include:
 Proxy models are always excluded. They are the same as the model they proxy,
 so there is no benefit in including them.
 
+## Anonymizing data
+
+Leukeleu-django-gdpr comes with a `anonymize` management command.
+
+```
+./manage.py anonymize
+```
+
+(You can only run this command when `DEBUG=True`. It's meant to run locally)
+
+This command uses the `gdpr.yaml` file to anonymize all PII fields in the database. 
+By default, it will anonymize **all fields** that contain PII.
+
+To change the configuration, you can create a subclass of `BaseAnonymizer`:
+
+```python
+# some_file.py
+class Anonymizer(BaseAnonymizer):
+    # To skip rows
+    extra_qs_overrides = {
+        "auth.User": User._base_manager.exclude(is_superuser=True),
+        ...
+    }
+
+    # To change what fake data should be used for a field
+    extra_field_overrides = {
+        "auth.User.first_name": fake.first_name,
+        ...
+    }
+
+    # To skip fields
+    excluded_fields = [
+        "auth.User.email",  # Usually you should not exclude emails
+        ...
+    ]
+```
+
+Then add this setting to your settings file:
+
+```python
+DJANGO_GDPR_ANONYMIZER_CLASS = "location.to.custom.Anonymizer"
+```
+
 ## Checks
 
 Leukeleu-django-gdpr adds a `gdpr.I001` check to the `check` command. This check will fail if
