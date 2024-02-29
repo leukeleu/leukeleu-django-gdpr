@@ -123,6 +123,68 @@ include:
 Proxy models are always excluded. They are the same as the model they proxy,
 so there is no benefit in including them.
 
+## Anonymizing data
+
+Leukeleu-django-gdpr comes with a `anonymize` management command.
+
+```
+./manage.py anonymize
+```
+
+(You can only run this command when `DEBUG=True`. It's meant to run locally)
+
+This command uses the `gdpr.yaml` file to anonymize all PII fields in the database. 
+By default, it will anonymize **all fields** that contain PII.
+
+To change the configuration, you can create a subclass of `BaseAnonymizer`:
+
+```python
+# some_file.py
+
+fake = Faker(["nl-NL"])
+
+
+class Anonymizer(BaseAnonymizer):
+    # Exclude rows
+    # Default: superusers and staff users are excluded
+    extra_qs_overrides = {
+        "app.Model": Model._base_manager.exclude(some_field=...),
+        ...
+    }
+
+    # Specify fake data for a field
+    # Default: user's first_name and last_name are filled with random first/last names
+    extra_field_overrides = {
+        "app.Model.some_field": fake.word,
+        "app.Model.some_other_field": lambda: "same value for every cell",
+        ...
+    }
+    
+    # Specify the fake data used for a field type
+    # Use for custom fields or to overwrite defaults
+    # Default: django builtin fields have "sensible" defaults
+    extra_fieldtype_overrides = {
+        "CustomPhoneNumberField": fake.phone_number,
+      
+        # Also specify a unique variant (append with ".unique")
+        "CustomPhoneNumberField.unique": fake.unique.phone_number,
+        ...
+    }
+
+    # Exclude fields
+    # Default: no fields are excluded
+    excluded_fields = [
+        "app.SomeModel.some_field",
+        ...
+    ]
+```
+
+Then add this setting to your settings file:
+
+```python
+DJANGO_GDPR_ANONYMIZER_CLASS = "location.to.custom.Anonymizer"
+```
+
 ## Checks
 
 Leukeleu-django-gdpr adds a `gdpr.I001` check to the `check` command. This check will fail if
