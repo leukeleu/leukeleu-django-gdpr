@@ -21,10 +21,8 @@ class Command(BaseCommand):
     """
 
     def handle(self, *args, **options):
-        if not settings.DATABASES["default"]["NAME"].endswith("_anonymized"):
-            raise CommandError(
-                "You can only anonymize a database that ends with `_anonymized`."
-            )
+        if not settings.DEBUG:
+            raise CommandError("You can only run this command in DEBUG mode.")
 
         stats = get_pii_stats(save=False)
         unclassified_fields = stats.get(None, 0)
