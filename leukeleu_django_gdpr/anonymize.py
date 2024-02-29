@@ -19,6 +19,23 @@ def get_models_from_gdpr_yml():
 
 
 class BaseAnonymizer:
+    """
+    Base class for anonymizing data.
+
+    Options:
+        excluded_fields: List of fields to exclude from anonymization
+            example: ["auth.User.email"]
+
+        extra_fieldtype_overrides: Dict of field type overrides
+            example: {"CharField": fake.pystr}
+
+        extra_qs_overrides: Dict of queryset overrides
+            example: {"auth.User": User.objects.exclude(is_superuser=True)}
+
+        extra_field_overrides: Dict of field overrides
+            example: {"auth.User.email": fake.email}
+    """
+
     excluded_fields = []
     extra_fieldtype_overrides = None
     extra_qs_overrides = None
@@ -61,8 +78,7 @@ class BaseAnonymizer:
                         )
                     except KeyError:
                         raise ImproperlyConfigured(
-                            f"Field type '{field_type}' not defined "
-                            "inside FIELDTYPE_FAKER_MAPPING"
+                            f"Unknown field type: '{field_type}'"
                         )
 
                     for obj in qs:
