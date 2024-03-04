@@ -1,6 +1,10 @@
 History
 -------
 
+* 1.5.0 (2024-03-04)
+
+  * Add anonymisation management command
+
 * 1.4.1 (2023-01-11)
 
   * Remove unused dependency on requests
