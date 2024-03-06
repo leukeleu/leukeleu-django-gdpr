@@ -125,13 +125,16 @@ so there is no benefit in including them.
 
 ## Anonymizing data
 
-Leukeleu-django-gdpr comes with a `anonymize` management command.
+Leukeleu-django-gdpr comes with a `anonymize` management command, that
+anonymizes all PII fields in the database. 
+
+It is meant to be used in development only. It requires an additional 
+dependency and setting `DEBUG = True`.
 
 ```
+pip install leukeleu-django-gdpr[anonymize]
 ./manage.py anonymize
 ```
-
-(You can only run this command when `DEBUG=True`. It's meant to run locally)
 
 This command uses the `gdpr.yaml` file to anonymize all PII fields in the database. 
 By default, it will anonymize **all fields** that contain PII.

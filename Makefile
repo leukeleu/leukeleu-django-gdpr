@@ -3,7 +3,7 @@
 test: flaketest isorttest coveragetest
 
 devinstall:
-	pip install --upgrade --upgrade-strategy eager -e .[test]
+	pip install --upgrade --upgrade-strategy eager -e .[test,anonymize]
 
 flaketest:
 	# Check syntax and style
