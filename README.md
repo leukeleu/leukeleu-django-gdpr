@@ -136,8 +136,8 @@ pip install leukeleu-django-gdpr[anonymize]
 ./manage.py anonymize
 ```
 
-This command uses the `gdpr.yaml` file to anonymize all PII fields in the database. 
-By default, it will anonymize **all fields** that contain PII.
+This command uses the `gdpr.yaml` file to anonymize **all fields marked 
+as PII** in the database.
 
 To change the configuration, you can create a subclass of `BaseAnonymizer`:
 
@@ -199,7 +199,5 @@ there are any `pii: null` values in the yaml file. To run the check, run:
 
 ## CI/CD
 
-To run this in CI/CD you need to ensure this package can be installed from
-wherever this package is indexed. Run it with `--check` to make a (scheduled?) CI/CD task
-fail if there are unclassified fields, which can happen if someone adds a field to a model
-but forgets to mark it as (non-) PII in the gdpr.yml.
+Run the `check` command to make a (scheduled) CI/CD task fail if there are unclassified fields, 
+which can happen if someone adds a field to a model but forgets to classify it in the `gdpr.yml`.
