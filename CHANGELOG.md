@@ -1,6 +1,10 @@
 History
 -------
 
+* 1.5.1 (2024-03-06)
+
+  * Make anonymisation dependency optional
+
 * 1.5.0 (2024-03-04)
 
   * Add anonymisation management command
