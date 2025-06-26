@@ -139,3 +139,25 @@ class AnonymizerTest(TestCase):
         Anonymizer().anonymize()
         new_user.refresh_from_db()
         self.assertNotEqual(new_user.username, "NewUser")
+
+    def test_bulk_update_only_called_with_updated_fields(self):
+        CustomUser.objects.all().delete()
+
+        # Last name and username are empty so should not be added to the bulk update
+        CustomUser.objects.create(first_name="First name")
+
+        with mock.patch.object(CustomUser.objects, "bulk_update") as mock_bulk_update:
+            BaseAnonymizer().anonymize()
+            args, kwargs = mock_bulk_update.call_args
+            update_fields_args = args[1]
+            self.assertEqual(update_fields_args, {"first_name"})
+
+    def test_bulk_update_only_called_if_fields_to_update(self):
+        CustomUser.objects.all().delete()
+
+        # All fields empty so nothing to (bulk) update
+        CustomUser.objects.create()
+
+        with mock.patch.object(CustomUser.objects, "bulk_update") as mock_bulk_update:
+            BaseAnonymizer().anonymize()
+            self.assertRaises(AssertionError, mock_bulk_update.assert_called_once)
