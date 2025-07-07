@@ -63,6 +63,10 @@ class BaseAnonymizer:
                 # Calling .all() makes sure we are always dealing with the latest data
                 qs = qs_overrides.get(model_name, Model._base_manager).all()
 
+                # Collect fields that actually need to be updated and skip updating
+                # entirely if the set is empty
+                fields_to_update = set()
+
                 for field_name, field_data in model_data["fields"].items():
                     field_path = f"{model_name}.{field_name}"
                     if not field_data["pii"] or field_path in self.excluded_fields:
@@ -88,12 +92,14 @@ class BaseAnonymizer:
                     for obj in qs:
                         if getattr(obj, field_name) not in EMPTY_VALUES:
                             setattr(obj, field_name, value_func())
+                            fields_to_update.add(field_name)
 
-                Model.objects.bulk_update(
-                    qs,
-                    model_data["fields"].keys(),
-                    batch_size=500,
-                )
+                if fields_to_update:
+                    Model.objects.bulk_update(
+                        qs,
+                        fields_to_update,
+                        batch_size=500,
+                    )
 
     def get_fieldtype_overrides(self):
         fieldtype_overrides = {
