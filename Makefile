@@ -1,22 +1,65 @@
-.PHONY: test flaketest isorttest
+.PHONY: help
+help:
+	@echo "The following commands are meant to be run inside the python container:"
+	@echo
+	@echo "  make test - Run lint"
+	@echo "  make lint - Check syntax and style"
+	@echo "  make lintfix - Automatically fix syntax and style issues"
+	@echo "  make build - Build the package"
+	@echo
 
-test: flaketest isorttest coveragetest
+GITHUB_ACTIONS ?= false
 
-devinstall:
-	pip install --upgrade --upgrade-strategy eager -e .[test,anonymize]
+# Helper function to define a GitHub Actions group
+define group
+	@if [ "$(GITHUB_ACTIONS)" = "true" ]; then \
+		echo "::group::$1"; \
+	fi
+endef
 
-flaketest:
+.PHONY: test
+test: coveragetest
+
+.PHONY: lint
+lint:
 	# Check syntax and style
-	flake8
+	$(call group,Checking syntax and style)
+	uv run ruff check
+	uv run ruff format --check --diff
+	$(call endgroup)
 
+.PHONY: unittests
 unittests:
 	# Run unit tests with coverage
-	coverage run runtests.py
+	uv run coverage run ./runtests.py
 
+.PHONY: coveragetest
 coveragetest: unittests
 	# Generate coverage report and require minimum coverage
-	coverage report
+	uv run coverage report
 
-isorttest:
-	# check isort
-	isort . -c -w 120 -q --diff
+.PHONY: coverage
+coverage: unittests
+	# Generate test coverage html report
+	uv run coverage html
+	@echo "Coverage report is located at ./var/htmlcov/index.html"
+
+.PHONY: lintfix
+lintfix:
+	# Automatically fix syntax and style issues
+	uv run ruff check --fix-only
+	uv run ruff format
+
+.PHONY: clean
+clean:
+	# Clean up build files
+	$(call group,Cleaning up)
+	rm -rf dist/*.whl dist/*.tar.gz
+	$(call endgroup)
+
+.PHONY: build
+build: clean
+	# Build the package
+	$(call group,Building package)
+	uv build
+	$(call endgroup)
