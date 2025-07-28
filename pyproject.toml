@@ -1,13 +1,157 @@
+[project]
+name = "leukeleu_django_gdpr"
+description = "leukeleu-django-gdpr is a tool to generate GDPR documentation based on the project's models."
+authors = [
+  { name = "Wouter de Vries", email = "wdevries@leukeleu.nl" },
+]
+requires-python = ">=3.10"
+dependencies = [
+    "Django>=4.2,<6",
+    "pyyaml",
+]
+dynamic = ["version"]
+readme = "README.md"
+license = "MIT"
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Development Status :: 5 - Production/Stable",
+  "Framework :: Django",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+]
+
+
 [build-system]
-requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
-build-backend = "setuptools.build_meta"
+requires = [
+    "hatchling",
+    "versioningit",
+]
+build-backend = "hatchling.build"
 
-[tool.setuptools_scm]
+[tool.hatch.version]
+source = "versioningit"
 
-[tool.black]
+[tool.versioningit.next-version]
+method = "minor-release"
+
+[tool.versioningit.format]
+distance = "{next_version}.dev{distance}+{vcs}{rev}"
+# Example formatted version: 1.2.4.dev42+ge174a1f
+
+dirty = "{base_version}+d{build_date:%Y%m%d}"
+# Example formatted version: 1.2.3+d20230922
+
+distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
+# Example formatted version: 1.2.4.dev42+ge174a1f.d20230922
+
+[tool.hatch.build]
+include = [
+    "LICENSE",
+    "README.md",
+    "Makefile",
+    "manage.py",
+    "runtests.py",
+    ".editorconfig",
+    "tests/",
+    "leukeleu_django_checks/",
+    "*.lock",
+]
+
+[project.urls]
+Repository = "https://github.com/leukeleu/leukeleu-django-gdpr/"
+Issues = "https://github.com/leukeleu/leukeleu-django-gdpr/issues"
+Releasenotes = "https://github.com/leukeleu/leukeleu-django-gdpr/releases"
+
+[tool.ruff]
+unsafe-fixes = false
 line-length = 88
-target-version = [
-    "py38",
+
+[tool.ruff.lint]
+select = [
+  "ALL",  # enable all rules
+]
+preview = true  # even the experimental ones
+ignore = [
+  "A003",  # builtins may be shadowed by class atrributes (e.g. "id")
+  "ANN",  # annotations are not (yet) required
+  "ARG",  # unused arguments are allowed
+  "COM812",  # trailing commas in function calls are not required
+  "COM819",  # trailing comma in tuple is allowed
+  "CPY001",  # copyright notice is not required
+  "D",  # docstring checks are disabled
+  "DJ008",  # __str__ methods are not required for models
+  "DOC",  # docstring checks are disabled
+  "EM",  # error messages do not need to be assigned to a variable
+  "FIX",  # tasks/issue can be fixed later
+  "FURB101",  # open/read is OK, pathlib is not required
+  "FURB103",  # open/write is OK, pathlib is not required
+  "FURB118",  # operator module is nice, but not required
+  "PLC1901",  # `foo == ""` is *not equivalent* to `not foo`
+  "PT",  # pytest style is not required
+  "PTH",  # use of pathlib is not required
+  "PYI",  # disable type hinting stub file checks
+  "RET503",  # explicit return of None is not required
+  "RET505",  # else after return is OK
+  "RET506",  # else after raise is OK
+  "RUF012",  # typing.ClassVar is not required
+  "SIM105",  # contextlib.suppress and try/except/pass are both OK
+  "SIM108",  # if/else blocks and tenary operators are both OK
+  "TD001",  # "FIXME" is OK
+  "TD002",  # task author is not required
+  "TD003",  # link to issue is recommended but not required
+  "TID252",  # relative imports are OK
+  "TRY003",  # long error messages are OK
+]
+allowed-confusables = [
+  # Allow some confusable characters, e.g.:
+  # "–",  # (EN DASH)
+]
+unfixable = [
+  # manually fix/noqa
+  "RUF100",  # unused/unknown noqa comments
+]
+
+[tool.ruff.lint.extend-per-file-ignores]
+"/**/tests/*" = [
+  # This is OK in test code
+  "PLR0904",  # too many public methods
+  "PLR2004",  # magic values
+  "PLR6301",  # methods do not have to use self
+  "S105", "S106", "S107",  # hardcoded passwords
+  "S311",  # pseudo-random number generators
+]
+
+[tool.ruff.lint.flake8-self]
+extend-ignore-names = [
+  "_default_manager",  # django
+  "_meta",  # django
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 12
+
+[tool.ruff.lint.pep8-naming]
+extend-ignore-names = [
+  # add custom camel-case names (e.g. assertFooBar)
+]
+
+[tool.ruff.lint.pylint]
+max-args = 10  # default is 5
+
+[tool.ruff.lint.isort]
+lines-between-types = 1
+section-order = [
+  "future",
+  "standard-library",
+  "third-party",
+  "django",
+  "first-party",
+  "local-folder",
+]
+
+[tool.ruff.lint.isort.sections]
+django = [
+  "django",
 ]
 
 [tool.coverage.run]
@@ -17,30 +161,25 @@ source = [
     "tests",
 ]
 omit = [
-    "tests/test_settings.py",
+  "**/[aw]sgi.py",
+  "**/migrations/*",
+  "**/settings.py",
 ]
 
-[tool.check-manifest]
-ignore = []
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+skip_empty = true
 
-[tool.isort]
-profile = "black"
-known_django = [
-    "django",
+[tool.coverage.html]
+directory = "var/htmlcov"
+
+[dependency-groups]
+anonymize = [
+    "Faker"
 ]
-known_first_party = [
-    "leukeleu_django_gdpr",
-]
-sections = [
-    "FUTURE",
-    "STDLIB",
-    "THIRDPARTY",
-    "DJANGO",
-    "FIRSTPARTY",
-    "LOCALFOLDER",
-]
-lines_between_types = 1
-src_paths = [
-    "leukeleu_django_gdpr",
-    "tests",
+dev = [
+  "ruff~=0.11.6",
+  "coverage[toml]~=7.2",
+  "Faker",
 ]
