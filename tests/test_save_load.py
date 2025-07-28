@@ -15,7 +15,7 @@ class TestSerializerDataRoundTrip(TestCase):
         with self.settings(DJANGO_GDPR_YML_DIR=self.tmp_dir):
             serializer = Serializer()
             serializer.generate_models_list()
-            with open(get_gdpr_yml_path(), "w") as f:
+            with open(get_gdpr_yml_path(), "w") as f:  # noqa: PLW1514
                 serializer.save(f)
 
             self.assertEqual(serializer.models, read_data().get("models"))

@@ -148,7 +148,7 @@ class AnonymizerTest(TestCase):
 
         with mock.patch.object(CustomUser.objects, "bulk_update") as mock_bulk_update:
             BaseAnonymizer().anonymize()
-            args, kwargs = mock_bulk_update.call_args
+            args, kwargs = mock_bulk_update.call_args  # noqa: RUF059
             update_fields_args = args[1]
             self.assertEqual(update_fields_args, {"first_name"})
 

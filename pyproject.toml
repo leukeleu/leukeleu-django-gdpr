@@ -124,6 +124,7 @@ unfixable = [
 [tool.ruff.lint.flake8-self]
 extend-ignore-names = [
   "_default_manager",  # django
+  "_base_manager",  # django
   "_meta",  # django
 ]
 

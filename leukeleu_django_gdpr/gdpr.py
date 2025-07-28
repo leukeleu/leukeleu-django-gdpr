@@ -47,7 +47,7 @@ def _str(s):
     if isinstance(s, SafeString):
         # Adding a non-safe str to a SafeString will return s str
         # (not a SafeString) this is the only way to undo mark_safe
-        s = s + ""
+        s += ""
     return s
 
 
@@ -200,7 +200,7 @@ def get_manual_input_for_field(data, model_label, field_label):
     return {}
 
 
-def get_pii_stats(save=False):
+def get_pii_stats(save=False):  # noqa: FBT002
     """
     Determines the PII stats for all models. Any data from an existing
     gdpr.yml is taken into account. If save is True, the data is saved
