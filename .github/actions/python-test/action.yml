@@ -1,0 +1,9 @@
+name: Test
+
+runs:
+  using: composite
+  steps:
+    - name: Test
+      run: |
+        make test
+      shell: bash
