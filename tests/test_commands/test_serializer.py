@@ -7,9 +7,9 @@ from leukeleu_django_gdpr.gdpr import Serializer, get_gdpr_yml_path
 
 
 class TestGetGdprYmlPath(TestCase):
-    @override_settings(BASE_DIR="/tmp")
+    @override_settings(BASE_DIR="/tmp")  # noqa: S108
     def test_get_gdpr_yml_path(self):
-        self.assertEqual(get_gdpr_yml_path(), pathlib.Path("/tmp/gdpr.yml"))
+        self.assertEqual(get_gdpr_yml_path(), pathlib.Path("/tmp/gdpr.yml"))  # noqa: S108
 
     @override_settings(DJANGO_GDPR_YML_DIR="tests/")
     def test_custom_gdpr_yml_path(self):

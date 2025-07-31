@@ -1,0 +1,14 @@
+name: Setup
+description: Perform initial setup of package
+
+runs:
+  using: composite
+  steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+      with:
+         cache-dependency-glob: "uv.lock"
+
+    - name: Install uv project
+      run: uv sync --dev --locked
+      shell: bash

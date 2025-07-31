@@ -10,16 +10,16 @@ class CustomUser(AbstractUser):
     )
 
     date_of_birth = models.DateField(_("Date of birth"), null=True, blank=True)
-    bsn = models.CharField(_("BSN"), max_length=9, null=True, blank=True)
+    bsn = models.CharField(_("BSN"), max_length=9, null=True, blank=True)  # noqa: DJ001
 
 
 class SpecialUser(CustomUser):
-    speciality = models.CharField(
+    speciality = models.CharField(  # noqa: DJ001
         _("Speciality"),
         max_length=255,
         null=True,
         blank=True,
-        help_text=mark_safe(
+        help_text=mark_safe(  # noqa: S308
             _(
                 "Speciality of the user."
                 " <a href='https://example.com' target='_blank'>More info</a>"

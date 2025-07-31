@@ -1,0 +1,12 @@
+name: Lint
+
+runs:
+  using: composite
+
+  steps:
+    - name: Lint
+      run: |
+        make lint
+      shell: bash
+      env:
+        RUFF_OUTPUT_FORMAT: github

@@ -1,0 +1,29 @@
+name: Release Drafter
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+     - main
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  update_release_draft:
+    permissions:
+      # write permission is required to create a GitHub release
+      contents: write
+      pull-requests: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Draft release
+        uses: release-drafter/release-drafter@v6
+        with:
+          config-name: release-drafter/config.yml
+          disable-autolabeler: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        timeout-minutes: 1

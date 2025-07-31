@@ -56,9 +56,9 @@ class BaseAnonymizer:
         with transaction.atomic():
             models = get_models_from_gdpr_yml()
             for model_name, model_data in models.items():
-                print(f"Currently anonymizing: {model_name}")
+                print(f"Currently anonymizing: {model_name}")  # noqa: T201
 
-                Model = apps.get_model(model_name)  # noqa: N806
+                Model = apps.get_model(model_name)
 
                 # Calling .all() makes sure we are always dealing with the latest data
                 qs = qs_overrides.get(model_name, Model._base_manager).all()
@@ -87,7 +87,7 @@ class BaseAnonymizer:
                     except KeyError:
                         raise ImproperlyConfigured(
                             f"Unknown field type: '{field_type}'"
-                        )
+                        ) from None
 
                     for obj in qs:
                         if getattr(obj, field_name) not in EMPTY_VALUES:

@@ -7,7 +7,7 @@ warnings.resetwarnings()
 # Warn only once per module
 warnings.simplefilter("module")
 # Redirect warnings output to the logging system
-logging.captureWarnings(True)
+logging.captureWarnings(True)  # noqa: FBT003
 
 # Disable all log output, except warnings
 LOGGING = {

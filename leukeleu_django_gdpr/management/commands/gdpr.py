@@ -4,7 +4,7 @@ from leukeleu_django_gdpr.gdpr import get_pii_stats
 
 
 class Command(BaseCommand):
-    def add_arguments(self, parser):
+    def add_arguments(self, parser):  # noqa: PLR6301
         parser.add_argument(
             "--check",
             action="store_true",
