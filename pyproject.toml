@@ -1,5 +1,6 @@
 [project]
 name = "leukeleu_django_gdpr"
+version = "0.0.0"
 description = "leukeleu-django-gdpr is a tool to generate GDPR documentation based on the project's models."
 authors = [
   { name = "Wouter de Vries", email = "wdevries@leukeleu.nl" },
@@ -9,9 +10,9 @@ dependencies = [
     "Django>=4.2,<6",
     "pyyaml",
 ]
-dynamic = ["version"]
 readme = "README.md"
 license = "MIT"
+license-files = ["LICENSE"]
 classifiers = [
   "License :: OSI Approved :: MIT License",
   "Development Status :: 5 - Production/Stable",
@@ -31,40 +32,12 @@ dev = [
 ]
 
 [build-system]
-requires = [
-    "hatchling",
-    "versioningit",
-]
-build-backend = "hatchling.build"
+requires = ["uv_build"]
+build-backend = "uv_build"
 
-[tool.hatch.version]
-source = "versioningit"
-
-[tool.versioningit.next-version]
-method = "minor-release"
-
-[tool.versioningit.format]
-distance = "{next_version}.dev{distance}+{vcs}{rev}"
-# Example formatted version: 1.2.4.dev42+ge174a1f
-
-dirty = "{base_version}+d{build_date:%Y%m%d}"
-# Example formatted version: 1.2.3+d20230922
-
-distance-dirty = "{next_version}.dev{distance}+{vcs}{rev}.d{build_date:%Y%m%d}"
-# Example formatted version: 1.2.4.dev42+ge174a1f.d20230922
-
-[tool.hatch.build]
-include = [
-    "LICENSE",
-    "README.md",
-    "Makefile",
-    "manage.py",
-    "runtests.py",
-    ".editorconfig",
-    "tests/",
-    "leukeleu_django_checks/",
-    "*.lock",
-]
+[tool.uv.build-backend]
+module-name = "leukeleu_django_gdpr"
+module-root = ""
 
 [project.urls]
 Repository = "https://github.com/leukeleu/leukeleu-django-gdpr/"

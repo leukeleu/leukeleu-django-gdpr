@@ -5,13 +5,12 @@ concurrency:
   group: ${{ github.workflow }}
 
 on:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types: [ published ]
 
 jobs:
   release:
-    name: Release Leukeleu Django Checks
+    name: Release Leukeleu Django GDPR
 
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -23,19 +22,13 @@ jobs:
       contents: read
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/python-setup
-      - name: Lint
-        uses: ./.github/actions/python-lint
-      - name: Test
-        uses: ./.github/actions/python-test
+      - uses: ./.github/actions/python-lint
+      - uses: ./.github/actions/python-test
+      - name: Set version
+        run: uv version ${GITHUB_REF#refs/tags/}
       - name: Build
-        run: |
-          make build
+        run: make build
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: './dist'
