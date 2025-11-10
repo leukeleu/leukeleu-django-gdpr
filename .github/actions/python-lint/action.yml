@@ -5,8 +5,7 @@ runs:
 
   steps:
     - name: Lint
-      run: |
-        make lint
+      run: make lint
       shell: bash
       env:
         RUFF_OUTPUT_FORMAT: github
