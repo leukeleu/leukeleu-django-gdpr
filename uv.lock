@@ -139,10 +139,12 @@ dependencies = [
     { name = "pyyaml" },
 ]
 
-[package.dev-dependencies]
+[package.optional-dependencies]
 anonymize = [
     { name = "faker" },
 ]
+
+[package.dev-dependencies]
 dev = [
     { name = "coverage", extra = ["toml"] },
     { name = "faker" },
@@ -152,11 +154,12 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "django", specifier = ">=4.2,<6" },
+    { name = "faker", marker = "extra == 'anonymize'" },
     { name = "pyyaml" },
 ]
+provides-extras = ["anonymize"]
 
 [package.metadata.requires-dev]
-anonymize = [{ name = "faker" }]
 dev = [
     { name = "coverage", extras = ["toml"], specifier = "~=7.2" },
     { name = "faker" },
