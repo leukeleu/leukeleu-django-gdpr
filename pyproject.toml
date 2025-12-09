@@ -21,10 +21,12 @@ classifiers = [
   "Programming Language :: Python :: 3",
 ]
 
-[dependency-groups]
+[project.optional-dependencies]
 anonymize = [
   "faker",
 ]
+
+[dependency-groups]
 dev = [
   "coverage[toml]~=7.2",
   "faker",
