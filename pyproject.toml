@@ -30,7 +30,7 @@ anonymize = [
 dev = [
   "coverage[toml]~=7.2",
   "faker",
-  "ruff~=0.11.6",
+  "ruff>=0.11.6,<0.16.0",
 ]
 
 [build-system]
