@@ -101,6 +101,26 @@ class AnonymizerTest(TestCase):
         self.assertNotEqual(Path(self.user.avatar.path).name, Path(original_path).name)
         self.assertEqual(Path(self.user.avatar.path).parent, Path(original_path).parent)
 
+    def test_imagefield_anonymization_no_image(self):
+        user_missing_avatar = CustomUser.objects.create(
+            username="User_missing_avatar",
+            first_name="Carol",
+            avatar=str(
+                Path(CustomUser.avatar.field.storage.base_location)
+                / "does-not-exist.png"
+            ),
+        )
+
+        original_path = user_missing_avatar.avatar.path
+        self.assertFalse(Path(original_path).is_file())
+
+        BaseAnonymizer().anonymize()
+
+        user_missing_avatar.refresh_from_db()
+
+        self.assertTrue(Path(user_missing_avatar.avatar.path).is_file())
+        self.assertFalse(Path(original_path).is_file())
+
     def test_excluded_fields(self):
         class Anonymizer(BaseAnonymizer):
             excluded_fields = [
