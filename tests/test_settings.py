@@ -28,6 +28,9 @@ LOGGING = {
 PACKAGE_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(PACKAGE_DIR)
 
+# Use custom test runner that removes the media root after the tests have completed
+TEST_RUNNER = "tests.runner.TestRunner"
+
 SECRET_KEY = "django-insecure-test-secret-key"
 
 USE_TZ = True
