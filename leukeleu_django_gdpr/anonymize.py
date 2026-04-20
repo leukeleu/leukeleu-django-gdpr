@@ -1,3 +1,6 @@
+import uuid
+
+from importlib import resources
 from typing import TYPE_CHECKING, Any, Protocol
 
 from faker import Faker
@@ -12,6 +15,8 @@ from django.db import transaction
 from django.db.models import Field, ImageField, Model, Q
 
 from leukeleu_django_gdpr.gdpr import read_data
+
+from . import static
 
 if TYPE_CHECKING:
     from django.db.models.fields.files import ImageFieldFile
@@ -47,8 +52,8 @@ def anonymize_image_field(obj: Model, field: Field) -> str:
 
     current_image.delete()
 
-    new_image_bytes = Faker().image(image_format="png")
-    new_file_name = f"{Faker().first_name()}.png"
+    new_image_bytes = (resources.files(static) / "image.png").read_bytes()
+    new_file_name = f"{uuid.uuid4()}.png"
     current_image.save(new_file_name, ContentFile(new_image_bytes))
 
     return current_image.path
