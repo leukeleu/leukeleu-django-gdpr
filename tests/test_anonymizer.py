@@ -117,7 +117,7 @@ class AnonymizerTest(TestCase):
     def test_extra_fieldtypes(self):
         class Anonymizer(BaseAnonymizer):
             extra_fieldtype_overrides = {
-                "CharField": lambda: "Foo",
+                "CharField": lambda obj, field: "Foo",
             }
 
             def get_field_overrides(self):
@@ -145,7 +145,7 @@ class AnonymizerTest(TestCase):
     def test_extra_field_overrides(self):
         class Anonymizer(BaseAnonymizer):
             extra_field_overrides = {
-                "custom_users.CustomUser.username": lambda: "Foo",
+                "custom_users.CustomUser.username": lambda obj, field: "Foo",
             }
 
         self.assertEqual(self.user.username, "User")
