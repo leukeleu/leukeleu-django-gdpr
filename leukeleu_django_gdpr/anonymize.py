@@ -1,4 +1,4 @@
-from typing import Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol
 
 from faker import Faker
 
@@ -6,11 +6,15 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
+from django.core.files.base import ContentFile
 from django.core.validators import EMPTY_VALUES
 from django.db import transaction
-from django.db.models import Field, Model, Q
+from django.db.models import Field, ImageField, Model, Q
 
 from leukeleu_django_gdpr.gdpr import read_data
+
+if TYPE_CHECKING:
+    from django.db.models.fields.files import ImageFieldFile
 
 
 def get_models_from_gdpr_yml():
@@ -27,6 +31,27 @@ class AnonymizerFunction(Protocol):
             field: the field on the django model which is anonymized
         """
         ...
+
+
+def anonymize_image_field(obj: Model, field: Field) -> str:
+    """Function to anonymize image fields on Django models.
+
+    Deletes the original file and generates a new file in the same directory but
+    with a anonymized filename.
+    """
+
+    if not isinstance(field, ImageField):
+        raise TypeError
+
+    current_image: ImageFieldFile = getattr(obj, field.name)
+
+    current_image.delete()
+
+    new_image_bytes = Faker().image(image_format="png")
+    new_file_name = f"{Faker().first_name()}.png"
+    current_image.save(new_file_name, ContentFile(new_image_bytes))
+
+    return current_image.path
 
 
 class BaseAnonymizer:
@@ -133,6 +158,7 @@ class BaseAnonymizer:
             "FloatField.unique": lambda obj, field: self.fake.unique.random_int(),
             "GenericIPAddressField": lambda obj, field: self.fake.ipv4(),
             "GenericIPAddressField.unique": lambda obj, field: self.fake.unique.ipv4(),
+            "ImageField": anonymize_image_field,
             "IntegerField": lambda obj, field: self.fake.random_int(),
             "IntegerField.unique": lambda obj, field: self.fake.unique.random_int(),
             "JSONField": lambda obj, field: self.fake.pydict(
@@ -164,10 +190,7 @@ class BaseAnonymizer:
             "URLField.unique": lambda obj, field: self.fake.unique.url(),
         }
 
-        if self.extra_fieldtype_overrides is not None:
-            fieldtype_overrides.update(self.extra_fieldtype_overrides)
-
-        return fieldtype_overrides
+        return fieldtype_overrides | (self.extra_fieldtype_overrides or {})
 
     def get_qs_overrides(self):
         qs_overrides = {
