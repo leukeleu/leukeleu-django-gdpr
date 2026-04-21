@@ -41,7 +41,7 @@ build-backend = "uv_build"
 [tool.uv.build-backend]
 module-name = "leukeleu_django_gdpr"
 module-root = ""
-data = { data = "static" }
+data = { data = "leukeleu_django_gdpr/static" }
 
 [project.urls]
 Repository = "https://github.com/leukeleu/leukeleu-django-gdpr/"
