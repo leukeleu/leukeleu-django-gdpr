@@ -1,7 +1,7 @@
 import uuid
 
 from importlib import resources
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import Any, Protocol
 
 from faker import Faker
 
@@ -13,13 +13,11 @@ from django.core.files.base import ContentFile
 from django.core.validators import EMPTY_VALUES
 from django.db import transaction
 from django.db.models import Field, ImageField, Model, Q
+from django.db.models.fields.files import ImageFieldFile
 
 from leukeleu_django_gdpr.gdpr import read_data
 
 from . import static
-
-if TYPE_CHECKING:
-    from django.db.models.fields.files import ImageFieldFile
 
 
 def get_models_from_gdpr_yml():
@@ -38,7 +36,7 @@ class AnonymizerFunction(Protocol):
         ...
 
 
-def anonymize_image_field(obj: Model, field: Field) -> str:
+def anonymize_image_field(obj: Model, field: Field) -> ImageFieldFile:
     """Function to anonymize image fields on Django models.
 
     Deletes the original file and generates a new file in the same directory but
@@ -56,7 +54,7 @@ def anonymize_image_field(obj: Model, field: Field) -> str:
     new_file_name = f"{uuid.uuid4()}.png"
     current_image.save(new_file_name, ContentFile(new_image_bytes))
 
-    return current_image.path
+    return current_image
 
 
 class BaseAnonymizer:
