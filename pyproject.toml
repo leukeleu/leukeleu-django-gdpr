@@ -8,6 +8,7 @@ authors = [
 requires-python = ">=3.10"
 dependencies = [
     "Django>=4.2,<6",
+    "Pillow~=11.0",
     "pyyaml",
 ]
 readme = "README.md"
@@ -40,6 +41,7 @@ build-backend = "uv_build"
 [tool.uv.build-backend]
 module-name = "leukeleu_django_gdpr"
 module-root = ""
+data = { data = "leukeleu_django_gdpr/static" }
 
 [project.urls]
 Repository = "https://github.com/leukeleu/leukeleu-django-gdpr/"

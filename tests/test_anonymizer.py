@@ -1,5 +1,9 @@
+from pathlib import Path
 from unittest import mock
 
+from faker import Faker
+
+from django.core.files.base import ContentFile
 from django.test import TestCase
 
 from leukeleu_django_gdpr.anonymize import BaseAnonymizer
@@ -19,8 +23,11 @@ def _get_models():
                 "last_name": {
                     "pii": True,
                 },
+                "avatar": {
+                    "pii": True,
+                },
             }
-        }
+        },
     }
 
 
@@ -39,7 +46,13 @@ class AnonymizerTest(TestCase):
         cls.addClassCleanup(patch_get_models.stop)
 
     def setUp(self):
-        self.user = CustomUser.objects.create(username="User", first_name="John")
+        self.user = CustomUser.objects.create(
+            username="User",
+            first_name="John",
+            avatar=ContentFile(
+                Faker().image(image_format="png"), name="test_image.png"
+            ),
+        )
         self.superuser = CustomUser.objects.create(username="Super", is_superuser=True)
         self.staffuser = CustomUser.objects.create(username="Staff", is_staff=True)
 
@@ -76,6 +89,38 @@ class AnonymizerTest(TestCase):
         self.assertEqual(self.superuser.username, "Super")
         self.assertEqual(self.staffuser.username, "Staff")
 
+    def test_imagefield_anonymization(self):
+        original_image_data = self.user.avatar.read()
+        original_path = self.user.avatar.path
+
+        BaseAnonymizer().anonymize()
+
+        self.user.refresh_from_db()
+
+        self.assertNotEqual(self.user.avatar.read(), original_image_data)
+        self.assertNotEqual(Path(self.user.avatar.path).name, Path(original_path).name)
+        self.assertEqual(Path(self.user.avatar.path).parent, Path(original_path).parent)
+
+    def test_imagefield_anonymization_no_image(self):
+        user_missing_avatar = CustomUser.objects.create(
+            username="User_missing_avatar",
+            first_name="Carol",
+            avatar=str(
+                Path(CustomUser.avatar.field.storage.base_location)
+                / "does-not-exist.png"
+            ),
+        )
+
+        original_path = user_missing_avatar.avatar.path
+        self.assertFalse(Path(original_path).is_file())
+
+        BaseAnonymizer().anonymize()
+
+        user_missing_avatar.refresh_from_db()
+
+        self.assertTrue(Path(user_missing_avatar.avatar.path).is_file())
+        self.assertFalse(Path(original_path).is_file())
+
     def test_excluded_fields(self):
         class Anonymizer(BaseAnonymizer):
             excluded_fields = [
@@ -92,7 +137,7 @@ class AnonymizerTest(TestCase):
     def test_extra_fieldtypes(self):
         class Anonymizer(BaseAnonymizer):
             extra_fieldtype_overrides = {
-                "CharField": lambda: "Foo",
+                "CharField": lambda obj, field: "Foo",
             }
 
             def get_field_overrides(self):
@@ -120,7 +165,7 @@ class AnonymizerTest(TestCase):
     def test_extra_field_overrides(self):
         class Anonymizer(BaseAnonymizer):
             extra_field_overrides = {
-                "custom_users.CustomUser.username": lambda: "Foo",
+                "custom_users.CustomUser.username": lambda obj, field: "Foo",
             }
 
         self.assertEqual(self.user.username, "User")
