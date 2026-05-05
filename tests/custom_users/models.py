@@ -11,6 +11,10 @@ class CustomUser(AbstractUser):
 
     date_of_birth = models.DateField(_("Date of birth"), null=True, blank=True)
     bsn = models.CharField(_("BSN"), max_length=9, null=True, blank=True)  # noqa: DJ001
+    avatar = models.ImageField(
+        null=True,
+        upload_to="test_user/",
+    )
 
 
 class SpecialUser(CustomUser):
