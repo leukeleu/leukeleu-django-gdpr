@@ -1,7 +1,10 @@
+import inspect
 import uuid
 
+from collections.abc import Callable, Mapping
+from functools import partial
 from importlib import resources
-from typing import Any, Protocol
+from typing import Any, Protocol, TypeIs
 
 from faker import Faker
 
@@ -34,6 +37,39 @@ class AnonymizerFunction(Protocol):
             field: the field on the django model which is anonymized
         """
         ...
+
+
+AllowedOverrides = AnonymizerFunction | Callable[[], Any]
+
+
+def is_anonymizer_function(function: AllowedOverrides) -> TypeIs[AnonymizerFunction]:
+    """Check whether override function is a AnonymizerFunction or plain function.
+
+    Returns True if `function` should take the AnonymizerFunction parameters when called
+    and false if the function (can and) should take no arguments when called.
+
+    If the function is neither a AnonymizerFunction nor a function which needs no
+    arguments a TypeError is raised.
+    """
+
+    parameters = inspect.signature(function).parameters
+
+    if set(parameters.keys()) == {"obj", "field"}:
+        return True
+
+    non_default_parameters = [
+        parameter
+        for parameter in parameters.values()
+        if parameter.default == inspect.Parameter.empty
+    ]
+
+    if not non_default_parameters:
+        return False
+
+    raise TypeError(
+        "Given function is neither a AnonymizerFunction nor a callable without any "
+        "arguments that need to be provided."
+    )
 
 
 def anonymize_image_field(obj: Model, field: Field) -> ImageFieldFile:
@@ -80,9 +116,9 @@ class BaseAnonymizer:
     """
 
     excluded_fields = []
-    extra_fieldtype_overrides: dict[str, AnonymizerFunction] | None = None
+    extra_fieldtype_overrides: dict[str, AllowedOverrides] | None = None
     extra_qs_overrides = None
-    extra_field_overrides: dict[str, AnonymizerFunction] | None = None
+    extra_field_overrides: dict[str, AllowedOverrides] | None = None
 
     def __init__(self):
         self.fake = Faker(["nl-NL"])
@@ -129,9 +165,16 @@ class BaseAnonymizer:
                         ) from None
 
                     for obj in qs:
-                        if getattr(obj, field_name) not in EMPTY_VALUES:
-                            setattr(obj, field_name, value_func(obj=obj, field=field))
-                            fields_to_update.add(field_name)
+                        if getattr(obj, field_name) in EMPTY_VALUES:
+                            continue
+
+                        if is_anonymizer_function(value_func):
+                            new_value = value_func(obj=obj, field=field)
+                        else:
+                            new_value = value_func()
+
+                        setattr(obj, field_name, new_value)
+                        fields_to_update.add(field_name)
 
                 if fields_to_update:
                     Model.objects.bulk_update(
@@ -140,7 +183,7 @@ class BaseAnonymizer:
                         batch_size=500,
                     )
 
-    def get_fieldtype_overrides(self) -> dict[str, AnonymizerFunction]:
+    def get_fieldtype_overrides(self) -> Mapping[str, AllowedOverrides]:
         fieldtype_overrides = {
             "BigIntegerField": lambda obj, field: self.fake.random_int(),
             "BigIntegerField.unique": lambda obj, field: self.fake.unique.random_int(),
@@ -205,7 +248,7 @@ class BaseAnonymizer:
             qs_overrides.update(self.extra_qs_overrides)
         return qs_overrides
 
-    def get_field_overrides(self) -> dict[str, AnonymizerFunction]:
+    def get_field_overrides(self) -> Mapping[str, AllowedOverrides]:
         field_overrides = {
             f"{settings.AUTH_USER_MODEL}.first_name": lambda obj, field: (
                 self.fake.first_name
@@ -214,6 +257,4 @@ class BaseAnonymizer:
                 self.fake.last_name
             ),
         }
-        if self.extra_field_overrides is not None:
-            field_overrides.update(self.extra_field_overrides)
-        return field_overrides
+        return field_overrides | (self.extra_field_overrides or {})
