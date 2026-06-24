@@ -4,6 +4,7 @@ import uuid
 from collections.abc import Callable, Mapping
 from functools import partial
 from importlib import resources
+from types import MappingProxyType
 from typing import Any, Protocol, TypeIs
 
 from faker import Faker
@@ -116,9 +117,9 @@ class BaseAnonymizer:
     """
 
     excluded_fields = []
-    extra_fieldtype_overrides: dict[str, AllowedOverrides] | None = None
+    extra_fieldtype_overrides: Mapping[str, AllowedOverrides] | None = None
     extra_qs_overrides = None
-    extra_field_overrides: dict[str, AllowedOverrides] | None = None
+    extra_field_overrides: Mapping[str, AllowedOverrides] | None = None
 
     def __init__(self):
         self.fake = Faker(["nl-NL"])
@@ -184,48 +185,50 @@ class BaseAnonymizer:
                     )
 
     def get_fieldtype_overrides(self) -> Mapping[str, AllowedOverrides]:
-        fieldtype_overrides = {
-            "BigIntegerField": self.fake.random_int,
-            "BigIntegerField.unique": self.fake.unique.random_int,
-            "BooleanField": self.fake.boolean,  # No unique varit
-            "CharField": self.fake.pystr,
-            "CharField.unique": self.fake.unique.pystr,
-            "DateField": self.fake.date_this_decade,
-            "DateField.unique": self.fake.unique.date_this_decade,
-            "DateTimeField": self.fake.date_time_this_decade,
-            "DateTimeField.unique": self.fake.unique.date_time_this_decade,
-            "DecimalField": self.fake.random_int,
-            "DecimalField.unique": self.fake.unique.random_int,
-            "EmailField": self.fake.safe_email,
-            "EmailField.unique": self.fake.unique.safe_email,
-            "FloatField": self.fake.random_int,
-            "FloatField.unique": self.fake.unique.random_int,
-            "GenericIPAddressField": self.fake.ipv4,
-            "GenericIPAddressField.unique": self.fake.unique.ipv4,
-            "ImageField": anonymize_image_field,
-            "IntegerField": self.fake.random_int,
-            "IntegerField.unique": self.fake.unique.random_int,
-            "JSONField": partial(
-                self.fake.pydict,
-                value_types=["str"],
-            ),  # No unique variant
-            "PositiveBigIntegerField": self.fake.random_int,
-            "PositiveBigIntegerField.unique": self.fake.unique.random_int,
-            "PositiveIntegerField": self.fake.random_int,
-            "PositiveIntegerField.unique": self.fake.unique.random_int,
-            "PositiveSmallIntegerField": self.fake.random_int,
-            "PositiveSmallIntegerField.unique": self.fake.unique.random_int,
-            "RichTextField": self.fake.paragraph,
-            "RichTextField.unique": self.fake.unique.paragraph,
-            "SlugField": self.fake.pystr,
-            "SlugField.unique": self.fake.unique.pystr,
-            "SmallIntegerField": self.fake.random_int,
-            "SmallIntegerField.unique": self.fake.unique.random_int,
-            "TextField": self.fake.paragraph,
-            "TextField.unique": self.fake.unique.paragraph,
-            "URLField": self.fake.url,
-            "URLField.unique": self.fake.unique.url,
-        }
+        fieldtype_overrides = MappingProxyType(
+            {
+                "BigIntegerField": self.fake.random_int,
+                "BigIntegerField.unique": self.fake.unique.random_int,
+                "BooleanField": self.fake.boolean,  # No unique varit
+                "CharField": self.fake.pystr,
+                "CharField.unique": self.fake.unique.pystr,
+                "DateField": self.fake.date_this_decade,
+                "DateField.unique": self.fake.unique.date_this_decade,
+                "DateTimeField": self.fake.date_time_this_decade,
+                "DateTimeField.unique": self.fake.unique.date_time_this_decade,
+                "DecimalField": self.fake.random_int,
+                "DecimalField.unique": self.fake.unique.random_int,
+                "EmailField": self.fake.safe_email,
+                "EmailField.unique": self.fake.unique.safe_email,
+                "FloatField": self.fake.random_int,
+                "FloatField.unique": self.fake.unique.random_int,
+                "GenericIPAddressField": self.fake.ipv4,
+                "GenericIPAddressField.unique": self.fake.unique.ipv4,
+                "ImageField": anonymize_image_field,
+                "IntegerField": self.fake.random_int,
+                "IntegerField.unique": self.fake.unique.random_int,
+                "JSONField": partial(
+                    self.fake.pydict,
+                    value_types=["str"],
+                ),  # No unique variant
+                "PositiveBigIntegerField": self.fake.random_int,
+                "PositiveBigIntegerField.unique": self.fake.unique.random_int,
+                "PositiveIntegerField": self.fake.random_int,
+                "PositiveIntegerField.unique": self.fake.unique.random_int,
+                "PositiveSmallIntegerField": self.fake.random_int,
+                "PositiveSmallIntegerField.unique": self.fake.unique.random_int,
+                "RichTextField": self.fake.paragraph,
+                "RichTextField.unique": self.fake.unique.paragraph,
+                "SlugField": self.fake.pystr,
+                "SlugField.unique": self.fake.unique.pystr,
+                "SmallIntegerField": self.fake.random_int,
+                "SmallIntegerField.unique": self.fake.unique.random_int,
+                "TextField": self.fake.paragraph,
+                "TextField.unique": self.fake.unique.paragraph,
+                "URLField": self.fake.url,
+                "URLField.unique": self.fake.unique.url,
+            }
+        )
 
         return fieldtype_overrides | (self.extra_fieldtype_overrides or {})
 
@@ -240,8 +243,10 @@ class BaseAnonymizer:
         return qs_overrides
 
     def get_field_overrides(self) -> Mapping[str, AllowedOverrides]:
-        field_overrides = {
-            f"{settings.AUTH_USER_MODEL}.first_name": self.fake.first_name,
-            f"{settings.AUTH_USER_MODEL}.last_name": self.fake.last_name,
-        }
+        field_overrides = MappingProxyType(
+            {
+                f"{settings.AUTH_USER_MODEL}.first_name": self.fake.first_name,
+                f"{settings.AUTH_USER_MODEL}.last_name": self.fake.last_name,
+            }
+        )
         return field_overrides | (self.extra_field_overrides or {})
