@@ -5,9 +5,10 @@ from collections.abc import Callable, Mapping
 from functools import partial
 from importlib import resources
 from types import MappingProxyType
-from typing import Any, Protocol, TypeIs
+from typing import Any, Protocol
 
 from faker import Faker
+from typing_extensions import TypeIs
 
 from django.apps import apps
 from django.conf import settings

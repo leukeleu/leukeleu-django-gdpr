@@ -138,6 +138,7 @@ dependencies = [
     { name = "django" },
     { name = "pillow" },
     { name = "pyyaml" },
+    { name = "typing-extensions" },
 ]
 
 [package.optional-dependencies]
@@ -158,6 +159,7 @@ requires-dist = [
     { name = "faker", marker = "extra == 'anonymize'" },
     { name = "pillow", specifier = ">=11.3.0" },
     { name = "pyyaml" },
+    { name = "typing-extensions", specifier = ">=4.14.1" },
 ]
 provides-extras = ["anonymize"]
 
