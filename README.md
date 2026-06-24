@@ -177,6 +177,9 @@ class Anonymizer(BaseAnonymizer):
       
         # Also specify a unique variant (append with ".unique")
         "CustomPhoneNumberField.unique": fake.unique.phone_number,
+        
+        # Use functools.partial to set arguments for simple functions
+        "CustomRegionField": partial(fake.words, nb=4),
 
         # You can also use full custom functions for more complex behaviour
         "ImageHash": custom_anonymizer,
