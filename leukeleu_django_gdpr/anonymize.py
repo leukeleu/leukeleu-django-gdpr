@@ -63,11 +63,11 @@ def is_anonymizer_function(function: AllowedOverrides) -> TypeIs[AnonymizerFunct
         parameter
         for parameter in parameters.values()
         if parameter.kind
-        not in (
+        not in {
             inspect.Parameter.VAR_POSITIONAL,
             inspect.Parameter.VAR_KEYWORD,
-            inspect.Parameter.EMPTY,
-        )
+        }
+        and parameter.default == inspect.Parameter.empty
     ]
 
     if not non_default_parameters:
