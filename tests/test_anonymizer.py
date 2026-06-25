@@ -251,11 +251,15 @@ class IsAnonymizerFunctionTest(TestCase):
         def with_defaults(arg, default_arg=None):
             pass
 
+        def anonymizer_function_with_extra(obj, field, extra):
+            pass
+
         self.assertFalse(is_anonymizer_function(partial(needs_arguments, arg=None)))
         self.assertFalse(is_anonymizer_function(partial(with_defaults, arg=None)))
         self.assertFalse(
             is_anonymizer_function(partial(with_defaults, arg=None, default_arg=None))
         )
+        self.assertTrue(partial(anonymizer_function_with_extra, extra=None))
 
     def test_varargs(self) -> None:
         def with_args(*args):
