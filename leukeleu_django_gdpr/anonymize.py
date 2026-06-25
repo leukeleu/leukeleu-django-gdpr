@@ -62,7 +62,12 @@ def is_anonymizer_function(function: AllowedOverrides) -> TypeIs[AnonymizerFunct
     non_default_parameters = [
         parameter
         for parameter in parameters.values()
-        if parameter.default == inspect.Parameter.empty
+        if parameter.kind
+        not in (
+            inspect.Parameter.VAR_POSITIONAL,
+            inspect.Parameter.VAR_KEYWORD,
+            inspect.Parameter.EMPTY,
+        )
     ]
 
     if not non_default_parameters:
@@ -166,11 +171,13 @@ class BaseAnonymizer:
                             f"Unknown field type: '{field_type}'"
                         ) from None
 
+                    takes_arguments = is_anonymizer_function(value_func)
+
                     for obj in qs:
                         if getattr(obj, field_name) in EMPTY_VALUES:
                             continue
 
-                        if is_anonymizer_function(value_func):
+                        if takes_arguments:
                             new_value = value_func(obj=obj, field=field)
                         else:
                             new_value = value_func()
@@ -190,7 +197,7 @@ class BaseAnonymizer:
             {
                 "BigIntegerField": self.fake.random_int,
                 "BigIntegerField.unique": self.fake.unique.random_int,
-                "BooleanField": self.fake.boolean,  # No unique varit
+                "BooleanField": self.fake.boolean,  # No unique variant
                 "CharField": self.fake.pystr,
                 "CharField.unique": self.fake.unique.pystr,
                 "DateField": self.fake.date_this_decade,
