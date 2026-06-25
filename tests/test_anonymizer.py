@@ -256,3 +256,20 @@ class IsAnonymizerFunctionTest(TestCase):
         self.assertFalse(
             is_anonymizer_function(partial(with_defaults, arg=None, default_arg=None))
         )
+
+    def test_varargs(self) -> None:
+        def with_args(*args):
+            pass
+
+        def with_kwargs(**kwargs):
+            pass
+
+        def with_args_and_kwargs(*args, **kwargs):
+            pass
+
+        self.assertFalse(is_anonymizer_function(with_args))
+        self.assertFalse(is_anonymizer_function(with_kwargs))
+        self.assertFalse(is_anonymizer_function(with_args_and_kwargs))
+
+        self.assertFalse(is_anonymizer_function(lambda *args: None))
+        self.assertFalse(is_anonymizer_function(lambda **kwargs: None))
