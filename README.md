@@ -141,7 +141,9 @@ as PII** in the database.
 
 To change the configuration, you can create a subclass of `BaseAnonymizer`:
 
-Note that anonymizer functions should conform to the `leukeleu_django_gdpr.anonmymize.AnonymizerFunction` protocol.
+Note that anonymizer functions should either conform to the
+`leukeleu_django_gdpr.anonymize.AnonymizerFunction` protocol or be functions that do
+not need to take any arguments.
 
 ```python
 # some_file.py
@@ -162,8 +164,8 @@ class Anonymizer(BaseAnonymizer):
     # Specify fake data for a field
     # Default: user's first_name and last_name are filled with random first/last names
     extra_field_overrides = {
-        "app.Model.some_field": lambda obj, field: fake.word(),
-        "app.Model.some_other_field": lambda obj, field: "same value for every cell",
+        "app.Model.some_field": fake.word,
+        "app.Model.some_other_field": lambda: "same value for every cell",
         ...
     }
     
@@ -171,10 +173,13 @@ class Anonymizer(BaseAnonymizer):
     # Use for custom fields or to overwrite defaults
     # Default: django builtin fields have "sensible" defaults
     extra_fieldtype_overrides = {
-        "CustomPhoneNumberField": lambda obj, field: fake.phone_number(),
+        "CustomPhoneNumberField": fake.phone_number,
       
         # Also specify a unique variant (append with ".unique")
-        "CustomPhoneNumberField.unique": lambda obj, field: fake.unique.phone_number(),
+        "CustomPhoneNumberField.unique": fake.unique.phone_number,
+        
+        # Use functools.partial to set arguments for simple functions
+        "CustomRegionField": partial(fake.words, nb=4),
 
         # You can also use full custom functions for more complex behaviour
         "ImageHash": custom_anonymizer,

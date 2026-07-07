@@ -1,9 +1,14 @@
+import inspect
 import uuid
 
+from collections.abc import Callable, Mapping
+from functools import partial
 from importlib import resources
+from types import MappingProxyType
 from typing import Any, Protocol
 
 from faker import Faker
+from typing_extensions import TypeIs
 
 from django.apps import apps
 from django.conf import settings
@@ -34,6 +39,44 @@ class AnonymizerFunction(Protocol):
             field: the field on the django model which is anonymized
         """
         ...
+
+
+AllowedOverrides = AnonymizerFunction | Callable[[], Any]
+
+
+def is_anonymizer_function(function: AllowedOverrides) -> TypeIs[AnonymizerFunction]:
+    """Check whether override function is a AnonymizerFunction or plain function.
+
+    Returns True if `function` should take the AnonymizerFunction parameters when called
+    and false if the function (can and) should take no arguments when called.
+
+    If the function is neither a AnonymizerFunction nor a function which needs no
+    arguments a TypeError is raised.
+    """
+
+    parameters = inspect.signature(function).parameters
+
+    if set(parameters.keys()) == {"obj", "field"}:
+        return True
+
+    non_default_parameters = [
+        parameter
+        for parameter in parameters.values()
+        if parameter.kind
+        not in {
+            inspect.Parameter.VAR_POSITIONAL,
+            inspect.Parameter.VAR_KEYWORD,
+        }
+        and parameter.default == inspect.Parameter.empty
+    ]
+
+    if not non_default_parameters:
+        return False
+
+    raise TypeError(
+        "Given function is neither a AnonymizerFunction nor a callable without any "
+        "arguments that need to be provided."
+    )
 
 
 def anonymize_image_field(obj: Model, field: Field) -> ImageFieldFile:
@@ -80,9 +123,9 @@ class BaseAnonymizer:
     """
 
     excluded_fields = []
-    extra_fieldtype_overrides: dict[str, AnonymizerFunction] | None = None
+    extra_fieldtype_overrides: Mapping[str, AllowedOverrides] | None = None
     extra_qs_overrides = None
-    extra_field_overrides: dict[str, AnonymizerFunction] | None = None
+    extra_field_overrides: Mapping[str, AllowedOverrides] | None = None
 
     def __init__(self):
         self.fake = Faker(["nl-NL"])
@@ -128,10 +171,19 @@ class BaseAnonymizer:
                             f"Unknown field type: '{field_type}'"
                         ) from None
 
+                    takes_arguments = is_anonymizer_function(value_func)
+
                     for obj in qs:
-                        if getattr(obj, field_name) not in EMPTY_VALUES:
-                            setattr(obj, field_name, value_func(obj=obj, field=field))
-                            fields_to_update.add(field_name)
+                        if getattr(obj, field_name) in EMPTY_VALUES:
+                            continue
+
+                        if takes_arguments:
+                            new_value = value_func(obj=obj, field=field)
+                        else:
+                            new_value = value_func()
+
+                        setattr(obj, field_name, new_value)
+                        fields_to_update.add(field_name)
 
                 if fields_to_update:
                     Model.objects.bulk_update(
@@ -140,58 +192,51 @@ class BaseAnonymizer:
                         batch_size=500,
                     )
 
-    def get_fieldtype_overrides(self) -> dict[str, AnonymizerFunction]:
-        fieldtype_overrides = {
-            "BigIntegerField": lambda obj, field: self.fake.random_int(),
-            "BigIntegerField.unique": lambda obj, field: self.fake.unique.random_int(),
-            "BooleanField": lambda obj, field: self.fake.boolean(),  # No unique variant
-            "CharField": lambda obj, field: self.fake.pystr(),
-            "CharField.unique": lambda obj, field: self.fake.unique.pystr(),
-            "DateField": lambda obj, field: self.fake.date_this_decade(),
-            "DateField.unique": lambda obj, field: self.fake.unique.date_this_decade(),
-            "DateTimeField": lambda obj, field: self.fake.date_time_this_decade(),
-            "DateTimeField.unique": lambda obj, field: (
-                self.fake.unique.date_time_this_decade()
-            ),
-            "DecimalField": lambda obj, field: self.fake.random_int(),
-            "DecimalField.unique": lambda obj, field: self.fake.unique.random_int(),
-            "EmailField": lambda obj, field: self.fake.safe_email(),
-            "EmailField.unique": lambda obj, field: self.fake.unique.safe_email(),
-            "FloatField": lambda obj, field: self.fake.random_int(),
-            "FloatField.unique": lambda obj, field: self.fake.unique.random_int(),
-            "GenericIPAddressField": lambda obj, field: self.fake.ipv4(),
-            "GenericIPAddressField.unique": lambda obj, field: self.fake.unique.ipv4(),
-            "ImageField": anonymize_image_field,
-            "IntegerField": lambda obj, field: self.fake.random_int(),
-            "IntegerField.unique": lambda obj, field: self.fake.unique.random_int(),
-            "JSONField": lambda obj, field: self.fake.pydict(
-                value_types=["str"]
-            ),  # No unique variant
-            "PositiveBigIntegerField": lambda obj, field: self.fake.random_int(),
-            "PositiveBigIntegerField.unique": lambda obj, field: (
-                self.fake.unique.random_int()
-            ),
-            "PositiveIntegerField": lambda obj, field: self.fake.random_int(),
-            "PositiveIntegerField.unique": lambda obj, field: (
-                self.fake.unique.random_int()
-            ),
-            "PositiveSmallIntegerField": lambda obj, field: self.fake.random_int(),
-            "PositiveSmallIntegerField.unique": lambda obj, field: (
-                self.fake.unique.random_int()
-            ),
-            "RichTextField": lambda obj, field: self.fake.paragraph(),
-            "RichTextField.unique": lambda obj, field: self.fake.unique.paragraph(),
-            "SlugField": lambda obj, field: self.fake.pystr(),
-            "SlugField.unique": lambda obj, field: self.fake.unique.pystr(),
-            "SmallIntegerField": lambda obj, field: self.fake.random_int(),
-            "SmallIntegerField.unique": lambda obj, field: (
-                self.fake.unique.random_int()
-            ),
-            "TextField": lambda obj, field: self.fake.paragraph(),
-            "TextField.unique": lambda obj, field: self.fake.unique.paragraph(),
-            "URLField": lambda obj, field: self.fake.url(),
-            "URLField.unique": lambda obj, field: self.fake.unique.url(),
-        }
+    def get_fieldtype_overrides(self) -> Mapping[str, AllowedOverrides]:
+        fieldtype_overrides = MappingProxyType(
+            {
+                "BigIntegerField": self.fake.random_int,
+                "BigIntegerField.unique": self.fake.unique.random_int,
+                "BooleanField": self.fake.boolean,  # No unique variant
+                "CharField": self.fake.pystr,
+                "CharField.unique": self.fake.unique.pystr,
+                "DateField": self.fake.date_this_decade,
+                "DateField.unique": self.fake.unique.date_this_decade,
+                "DateTimeField": self.fake.date_time_this_decade,
+                "DateTimeField.unique": self.fake.unique.date_time_this_decade,
+                "DecimalField": self.fake.random_int,
+                "DecimalField.unique": self.fake.unique.random_int,
+                "EmailField": self.fake.safe_email,
+                "EmailField.unique": self.fake.unique.safe_email,
+                "FloatField": self.fake.random_int,
+                "FloatField.unique": self.fake.unique.random_int,
+                "GenericIPAddressField": self.fake.ipv4,
+                "GenericIPAddressField.unique": self.fake.unique.ipv4,
+                "ImageField": anonymize_image_field,
+                "IntegerField": self.fake.random_int,
+                "IntegerField.unique": self.fake.unique.random_int,
+                "JSONField": partial(
+                    self.fake.pydict,
+                    value_types=["str"],
+                ),  # No unique variant
+                "PositiveBigIntegerField": self.fake.random_int,
+                "PositiveBigIntegerField.unique": self.fake.unique.random_int,
+                "PositiveIntegerField": self.fake.random_int,
+                "PositiveIntegerField.unique": self.fake.unique.random_int,
+                "PositiveSmallIntegerField": self.fake.random_int,
+                "PositiveSmallIntegerField.unique": self.fake.unique.random_int,
+                "RichTextField": self.fake.paragraph,
+                "RichTextField.unique": self.fake.unique.paragraph,
+                "SlugField": self.fake.pystr,
+                "SlugField.unique": self.fake.unique.pystr,
+                "SmallIntegerField": self.fake.random_int,
+                "SmallIntegerField.unique": self.fake.unique.random_int,
+                "TextField": self.fake.paragraph,
+                "TextField.unique": self.fake.unique.paragraph,
+                "URLField": self.fake.url,
+                "URLField.unique": self.fake.unique.url,
+            }
+        )
 
         return fieldtype_overrides | (self.extra_fieldtype_overrides or {})
 
@@ -205,15 +250,11 @@ class BaseAnonymizer:
             qs_overrides.update(self.extra_qs_overrides)
         return qs_overrides
 
-    def get_field_overrides(self) -> dict[str, AnonymizerFunction]:
-        field_overrides = {
-            f"{settings.AUTH_USER_MODEL}.first_name": lambda obj, field: (
-                self.fake.first_name
-            ),
-            f"{settings.AUTH_USER_MODEL}.last_name": lambda obj, field: (
-                self.fake.last_name
-            ),
-        }
-        if self.extra_field_overrides is not None:
-            field_overrides.update(self.extra_field_overrides)
-        return field_overrides
+    def get_field_overrides(self) -> Mapping[str, AllowedOverrides]:
+        field_overrides = MappingProxyType(
+            {
+                f"{settings.AUTH_USER_MODEL}.first_name": self.fake.first_name,
+                f"{settings.AUTH_USER_MODEL}.last_name": self.fake.last_name,
+            }
+        )
+        return field_overrides | (self.extra_field_overrides or {})

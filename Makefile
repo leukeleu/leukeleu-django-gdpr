@@ -28,10 +28,11 @@ lint:
 	uv run ruff format --check --diff
 	$(call endgroup)
 
+tests ?= tests
 .PHONY: unittests
 unittests:
 	# Run unit tests with coverage
-	uv run coverage run ./runtests.py
+	uv run coverage run ./runtests.py $(tests) --shuffle --no-input --durations 10
 
 .PHONY: coveragetest
 coveragetest: unittests

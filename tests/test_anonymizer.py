@@ -1,3 +1,4 @@
+from functools import partial
 from pathlib import Path
 from unittest import mock
 
@@ -6,7 +7,7 @@ from faker import Faker
 from django.core.files.base import ContentFile
 from django.test import TestCase
 
-from leukeleu_django_gdpr.anonymize import BaseAnonymizer
+from leukeleu_django_gdpr.anonymize import BaseAnonymizer, is_anonymizer_function
 from tests.custom_users.models import CustomUser
 
 
@@ -137,7 +138,7 @@ class AnonymizerTest(TestCase):
     def test_extra_fieldtypes(self):
         class Anonymizer(BaseAnonymizer):
             extra_fieldtype_overrides = {
-                "CharField": lambda obj, field: "Foo",
+                "CharField": lambda: "Foo",
             }
 
             def get_field_overrides(self):
@@ -165,7 +166,7 @@ class AnonymizerTest(TestCase):
     def test_extra_field_overrides(self):
         class Anonymizer(BaseAnonymizer):
             extra_field_overrides = {
-                "custom_users.CustomUser.username": lambda obj, field: "Foo",
+                "custom_users.CustomUser.username": lambda: "Foo",
             }
 
         self.assertEqual(self.user.username, "User")
@@ -206,3 +207,73 @@ class AnonymizerTest(TestCase):
         with mock.patch.object(CustomUser.objects, "bulk_update") as mock_bulk_update:
             BaseAnonymizer().anonymize()
             self.assertRaises(AssertionError, mock_bulk_update.assert_called_once)
+
+
+class IsAnonymizerFunctionTest(TestCase):
+    def test_named_functions(self) -> None:
+        def no_arguments():
+            pass
+
+        def default_arguments(arg="test"):
+            pass
+
+        def anonymizer_function(obj, field):
+            pass
+
+        def needs_arguments(arg):
+            pass
+
+        def needs_keyword_arguments(*, kwarg):
+            pass
+
+        self.assertFalse(is_anonymizer_function(no_arguments))
+        self.assertFalse(is_anonymizer_function(default_arguments))
+        self.assertTrue(is_anonymizer_function(anonymizer_function))
+
+        with self.assertRaises(TypeError):
+            is_anonymizer_function(needs_arguments)
+
+        with self.assertRaises(TypeError):
+            is_anonymizer_function(needs_keyword_arguments)
+
+    def test_lambdas(self) -> None:
+        self.assertFalse(is_anonymizer_function(lambda: None))
+        self.assertFalse(is_anonymizer_function(lambda arg="test": None))
+        self.assertTrue(is_anonymizer_function(lambda obj, field: None))
+
+        with self.assertRaises(TypeError):
+            is_anonymizer_function(lambda arg: None)
+
+    def test_partial(self) -> None:
+        def needs_arguments(arg):
+            pass
+
+        def with_defaults(arg, default_arg=None):
+            pass
+
+        def anonymizer_function_with_extra(obj, field, extra):
+            pass
+
+        self.assertFalse(is_anonymizer_function(partial(needs_arguments, arg=None)))
+        self.assertFalse(is_anonymizer_function(partial(with_defaults, arg=None)))
+        self.assertFalse(
+            is_anonymizer_function(partial(with_defaults, arg=None, default_arg=None))
+        )
+        self.assertTrue(partial(anonymizer_function_with_extra, extra=None))
+
+    def test_varargs(self) -> None:
+        def with_args(*args):
+            pass
+
+        def with_kwargs(**kwargs):
+            pass
+
+        def with_args_and_kwargs(*args, **kwargs):
+            pass
+
+        self.assertFalse(is_anonymizer_function(with_args))
+        self.assertFalse(is_anonymizer_function(with_kwargs))
+        self.assertFalse(is_anonymizer_function(with_args_and_kwargs))
+
+        self.assertFalse(is_anonymizer_function(lambda *args: None))
+        self.assertFalse(is_anonymizer_function(lambda **kwargs: None))
