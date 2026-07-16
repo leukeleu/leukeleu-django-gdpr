@@ -167,7 +167,8 @@ class BaseAnonymizer:
 
                     if not value_func:
                         raise ImproperlyConfigured(
-                            f"No anonymization method found for field '{field_path}' with type '{field_type}'."
+                            f"No anonymization method found for field '{field_path}' "
+                            f"with type '{field_type}'."
                         ) from None
 
                     takes_arguments = is_anonymizer_function(value_func)
