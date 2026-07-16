@@ -161,14 +161,13 @@ class BaseAnonymizer:
                     if field.unique:
                         field_type += ".unique"
 
-                    try:
-                        value_func = field_overrides.get(
-                            field_path,
-                            fieldtype_overrides[field_type],
-                        )
-                    except KeyError:
+                    value_func = field_overrides.get(
+                        field_path, fieldtype_overrides.get(field_type)
+                    )
+
+                    if not value_func:
                         raise ImproperlyConfigured(
-                            f"Unknown field type: '{field_type}'"
+                            f"No anonymization method found for field '{field_path}' with type '{field_type}'."
                         ) from None
 
                     takes_arguments = is_anonymizer_function(value_func)
